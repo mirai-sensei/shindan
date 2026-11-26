@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ワタシのトリセツ診断｜タクスー霊視 みらい先生</title>
+<meta name="description" content="質問に答えると、あなたの性格が「取扱説明書（トリセツ）」の形で出てくる診断です。性格タイプも、友達から見たあなたもわかります。彼のトリセツ（彼の沈黙タイプ）も診断できます。">
+<style>
+  :root{
+    --bg:#fdf7f4;
+    --card:#ffffff;
+    --ink:#3a3230;
+    --sub:#8a7a74;
+    --accent:#d6336c;
+    --accent-soft:#fdeef2;
+    --line:#f3d9de;
+    --gold:#b98a2f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,"Noto Sans JP",sans-serif;
+    font-size:17px;
+    line-height:1.8;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:24px 16px 56px;}
+  header.top{text-align:center;padding:24px 0 8px;}
+  .brand{color:var(--gold);letter-spacing:.35em;font-size:13px;}
+  h1{font-size:27px;margin:10px 0 6px;font-weight:600;letter-spacing:.06em;}
+  .lead{color:var(--sub);font-size:15px;margin:0 auto;max-width:32em;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:22px 18px;
+    margin:20px 0;
+    box-shadow:0 2px 10px rgba(214,51,108,.05);
+  }
+  h2{font-size:19px;margin:0 0 6px;font-weight:600;}
+  .note{color:var(--sub);font-size:14px;margin:4px 0 12px;}
+  /* モード切替 */
+  .tabs{display:flex;gap:10px;margin:20px 0 0;}
+  .tab{
+    flex:1;appearance:none;border:1px solid var(--line);background:#fff;border-radius:14px;
+    padding:14px 8px;cursor:pointer;font-family:inherit;color:var(--ink);text-align:center;
+  }
+  .tab .tname{display:block;font-size:17px;font-weight:600;}
+  .tab .tdesc{display:block;font-size:12px;color:var(--sub);margin-top:2px;line-height:1.5;}
+  .tab.sel{border-color:var(--accent);background:var(--accent-soft);}
+  .tab.sel .tname{color:var(--accent);}
+  .panel{display:none;}
+  .panel.open{display:block;}
+  /* 質問 */
+  .q{margin:0 0 18px;}
+  .q:last-child{margin-bottom:4px;}
+  .q p{margin:0 0 6px;font-size:15px;}
+  .q .qnum{color:var(--accent);font-weight:600;}
+  .opts{display:flex;gap:8px;flex-wrap:wrap;}
+  .obtn{
+    flex:1;min-width:140px;appearance:none;border:1px solid var(--line);background:#fff;
+    border-radius:12px;padding:10px;cursor:pointer;font-size:14px;color:var(--ink);font-family:inherit;
+    text-align:left;line-height:1.5;
+  }
+  .obtn.sel{border-color:var(--accent);background:var(--accent-soft);}
+  .go{
+    display:block;width:100%;margin:22px 0 0;padding:16px;border:none;border-radius:999px;
+    background:var(--accent);color:#fff;font-size:18px;cursor:pointer;font-family:inherit;letter-spacing:.08em;
+  }
+  .go:disabled{background:#e5c9d1;cursor:default;}
+  .err{color:var(--accent);font-size:14px;text-align:center;min-height:1.5em;margin:8px 0 0;}
+  /* 結果 */
+  .result{display:none;}
+  .type-head{text-align:center;}
+  .type-label{color:var(--sub);font-size:14px;letter-spacing:.2em;}
+  .type-name{font-size:30px;line-height:1.4;color:var(--accent);font-weight:600;margin:6px 0 2px;}
+  .type-sub{color:var(--sub);font-size:14px;}
+  .sec{margin-top:18px;}
+  .sec h3{
+    font-size:16px;margin:0 0 4px;font-weight:600;color:var(--ink);
+    border-left:4px solid var(--accent);padding-left:10px;
+  }
+  .sec p{margin:0;}
+  .locked{
+    margin-top:18px;background:#faf5f2;border:1px dashed var(--line);border-radius:14px;padding:14px 16px;
+  }
+  .locked .ltitle{font-size:14px;color:var(--sub);margin:0 0 6px;}
+  .locked ul{margin:0;padding-left:1.2em;color:var(--sub);font-size:15px;}
+  .meyasu{font-size:13px;color:var(--sub);border-top:1px dashed var(--line);padding-top:10px;margin-top:18px;}
+  .again{display:block;margin:18px auto 0;background:none;border:none;color:var(--sub);
+    text-decoration:underline;cursor:pointer;font-size:15px;font-family:inherit;}
+  /* シェア */
+  .sharebox{
+    background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 18px;margin:20px 0;text-align:center;
+  }
+  .sharebox h2{font-size:17px;}
+  .sharebtns{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
+  .sharebtn{
+    display:inline-block;text-decoration:none;padding:12px 26px;border-radius:999px;font-size:15px;color:#fff;letter-spacing:.05em;
+  }
+  .sharebtn.x{background:#000;}
+  .sharebtn.threads{background:#333;}
+  /* LINE */
+  .linebox{
+    background:#f2fbf3;border:1px solid #cfe8cf;border-radius:18px;padding:22px 18px;margin:20px 0;text-align:center;
+  }
+  .linebox h2{color:#2e7d32;}
+  .linebtn{
+    display:inline-block;margin-top:10px;background:#06c755;color:#fff;text-decoration:none;
+    padding:14px 34px;border-radius:999px;font-size:17px;letter-spacing:.05em;
+  }
+  .lineid{color:var(--sub);font-size:14px;margin-top:10px;}
+  /* 有料の次の一歩（置き場） */
+  .paidbox{
+    background:#fffdf6;border:1px solid #eadfc2;border-radius:18px;padding:22px 18px;margin:20px 0;
+  }
+  .paidbox h2{font-size:17px;color:var(--gold);}
+  .paiditem{margin-top:12px;}
+  .paiditem .pname{font-weight:600;}
+  .paiditem .pdesc{color:var(--sub);font-size:14px;margin:2px 0 0;}
+  .paidbtn{
+    display:inline-block;margin-top:6px;color:var(--gold);border:1px solid var(--gold);background:#fff;
+    text-decoration:none;padding:8px 22px;border-radius:999px;font-size:14px;
+  }
+  footer{text-align:center;color:var(--sub);font-size:13px;margin-top:28px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">― 診 断 ―</div>
+    <h1>ワタシのトリセツ診断</h1>
+    <p class="lead">質問に答えると、あなたの性格が「取扱説明書（トリセツ）」の形で出てきます。<br>
+    性格タイプも、友達から見たあなたもわかる。それがこの診断です。</p>
+  </header>
+
+  <div class="card">
+    <p style="margin:0;">この診断は<strong>無料</strong>です。<strong>登録なしで、結果の入口まで見られます</strong>。</p>
+    <p class="note" style="margin-bottom:0;">選んだ内容がどこかへ送信されることはありません。結果は、あなたの性格や彼の様子を眺めるための「見立て」です。</p>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab sel" id="tabA">
+      <span class="tname">ワタシのトリセツ</span>
+      <span class="tdesc">自分について答える（10問）</span>
+    </button>
+    <button type="button" class="tab" id="tabB">
+      <span class="tname">彼のトリセツ</span>
+      <span class="tdesc">彼について答える（8問）</span>
+    </button>
+  </div>
+
+  <!-- ===== モードA：ワタシのトリセツ ===== -->
+  <div class="panel open" id="panelA">
+    <div class="card">
+      <h2>ワタシのトリセツ</h2>
+      <p class="note">ふだんの自分に近いほうを選んでください。全10問です。</p>
+      <div id="questionsA"></div>
+      <button type="button" class="go" id="goA" disabled>ワタシのトリセツを開く</button>
+      <p class="err" id="errA"></p>
+    </div>
+
+    <div class="card result" id="resultA">
+      <div class="type-head">
+        <div class="type-label">あ な た の ト リ セ ツ</div>
+        <div class="type-name" id="typeNameA"></div>
+        <div class="type-sub" id="typeSubA"></div>
+      </div>
+      <div class="sec">
+        <h3>基本仕様</h3>
+        <p id="specA"></p>
+      </div>
+      <div class="sec">
+        <h3>喜ぶこと</h3>
+        <p id="joyA"></p>
+      </div>
+      <div class="locked">
+        <p class="ltitle">この先は、LINEでお届けします</p>
+        <ul>
+          <li>充電のしかた（元気の戻し方）</li>
+          <li>取り扱いの注意（こうされると弱い・しんどい）</li>
+          <li>周りから見えやすい姿（友達から見たあなた）</li>
+          <li>タイプ別の、深い読み解き</li>
+        </ul>
+      </div>
+      <p class="meyasu">この結果は、答え方から見立てた性格の傾向です。「必ずこういう人」という決めつけではありません。眺める材料にしてください。</p>
+      <button type="button" class="again" id="againA">答え直す</button>
+    </div>
+
+    <div class="sharebox" id="shareA" style="display:none;">
+      <h2>結果を、シェアできます</h2>
+      <p class="note" style="margin-bottom:0;">タイプ名と一言を入れた文案を用意しました。そのまま投稿できます。</p>
+      <div class="sharebtns">
+        <a class="sharebtn x" id="shareXA" href="#" target="_blank" rel="noopener">Xでシェア</a>
+        <a class="sharebtn threads" id="shareThreadsA" href="#" target="_blank" rel="noopener">Threadsでシェア</a>
+      </div>
+    </div>
+
+    <div class="linebox" id="lineA" style="display:none;">
+      <h2>続きは、LINEで受け取れます</h2>
+      <p style="margin:6px 0 0;">あなたのタイプの<strong>深掘り読み解きと特典</strong>を、LINEでお送りします。</p>
+      <p style="margin:10px 0 0;">LINEで友だち追加をして、<span id="lineKeywordA">「トリセツ○」</span>と送ってください。</p>
+      <p class="note">登録の流れの中で、メールアドレスの登録も一緒に済ませられます。深掘りと特典は、メールでもお受け取りいただけます。</p>
+      <a class="linebtn" href="https://line.me/R/ti/p/@936usuae" target="_blank" rel="noopener">LINEで友だち追加する</a>
+      <div class="lineid">LINE @936usuae（タクスー霊視 みらい先生）</div>
+    </div>
+  </div>
+
+  <!-- ===== モードB：彼のトリセツ ===== -->
+  <div class="panel" id="panelB">
+    <div class="card">
+      <h2>彼のトリセツ</h2>
+      <p class="note">彼の様子にいちばん近いものを選んでください。全8問です。彼の沈黙タイプと対応したトリセツが出ます。</p>
+      <div id="questionsB"></div>
+      <button type="button" class="go" id="goB" disabled>彼のトリセツを開く</button>
+      <p class="err" id="errB"></p>
+    </div>
+
+    <div class="card result" id="resultB">
+      <div class="type-head">
+        <div class="type-label">彼 の ト リ セ ツ</div>
+        <div class="type-name" id="typeNameB"></div>
+        <div class="type-sub" id="typeSubB"></div>
+      </div>
+      <div class="sec">
+        <h3>基本仕様</h3>
+        <p id="specB"></p>
+      </div>
+      <div class="sec">
+        <h3>彼が喜ぶ言葉</h3>
+        <p id="joyB"></p>
+      </div>
+      <div class="locked">
+        <p class="ltitle">この先は、LINEでお届けします</p>
+        <ul>
+          <li>沈黙したときの対処</li>
+          <li>取り扱いの注意</li>
+          <li>タイプ別の、深掘り読み解き</li>
+        </ul>
+      </div>
+      <p class="meyasu">この結果は、彼の様子から見立てた傾向です。彼の気持ちそのものを断定するものではありません。</p>
+      <button type="button" class="again" id="againB">答え直す</button>
+    </div>
+
+    <div class="sharebox" id="shareB" style="display:none;">
+      <h2>結果を、シェアできます</h2>
+      <p class="note" style="margin-bottom:0;">タイプ名と一言を入れた文案を用意しました。そのまま投稿できます。</p>
+      <div class="sharebtns">
+        <a class="sharebtn x" id="shareXB" href="#" target="_blank" rel="noopener">Xでシェア</a>
+        <a class="sharebtn threads" id="shareThreadsB" href="#" target="_blank" rel="noopener">Threadsでシェア</a>
+      </div>
+    </div>
+
+    <div class="linebox" id="lineB" style="display:none;">
+      <h2>続きは、LINEで受け取れます</h2>
+      <p style="margin:6px 0 0;">彼のタイプの<strong>深掘り読み解きと特典</strong>を、LINEでお送りします。</p>
+      <p style="margin:10px 0 0;">LINEで友だち追加をして、<span id="lineKeywordB">「トリセツ○」</span>と送ってください。</p>
+      <p class="note">登録の流れの中で、メールアドレスの登録も一緒に済ませられます。深掘りと特典は、メールでもお受け取りいただけます。</p>
+      <a class="linebtn" href="https://line.me/R/ti/p/@936usuae" target="_blank" rel="noopener">LINEで友だち追加する</a>
+      <div class="lineid">LINE @936usuae（タクスー霊視 みらい先生）</div>
+    </div>
+
+    <div class="paidbox" id="paidB" style="display:none;">
+      <h2>もっと深く知りたい方へ</h2>
+      <p class="note" style="margin-bottom:0;">診断は見立てです。あなたの状況に合わせて、もっと詳しく知りたい方には、こちらもあります。急がなくて大丈夫です。</p>
+      <div class="paiditem">
+        <div class="pname">ひとことメール鑑定（ココナラ）</div>
+        <p class="pdesc">彼のことで気になることを一つ、メールでお答えします。1,000円。</p>
+        <a class="paidbtn" href="https://coconala.com/services/4532594" target="_blank" rel="noopener">ココナラで見る</a>
+      </div>
+      <div class="paiditem">
+        <div class="pname">相談室だより（メンバーシップ）</div>
+        <p class="pdesc">同じ悩みを持つ方々とゆるくつながる、月980円の便りです。</p>
+        <a class="paidbtn" href="https://note.com/miraisensei/membership" target="_blank" rel="noopener">noteで見る</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    タクスー霊視 みらい先生｜霊視歴40年<br>
+    診断は「見立て」です。相手の気持ちを断定するものではありません。
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+/* ===== データと判定（ここから） ===== */
+
+/* ===== モードA：ワタシのトリセツ =====
+   3つの軸で判定する。
+   軸1（Q1-4）: soto=人と過ごして充電 / uchi=一人の時間で充電
+   軸2（Q5-7）: kotoba=言葉で伝える / okonai=行動で示す
+   軸3（Q8-10）: tatemono=計画を立てて進む / nagare=流れに乗る
+   各軸は多数決。同数のときは、その軸の最初の質問の答えを優先する。 */
+var QUESTIONS_A = [
+  {axis:0, q:"休みの日、いちばん元気が戻るのはどちらですか。",
+   opts:[["soto","友人や家族と、にぎやかに過ごす時間"],["uchi","一人の静かな時間"]]},
+  {axis:0, q:"うれしいことがあったとき、まずどうしたくなりますか。",
+   opts:[["soto","誰かに話して、一緒に喜びたい"],["uchi","まず自分の心の中で、じっくり味わいたい"]]},
+  {axis:0, q:"落ち込んだとき、気持ちが戻りやすいのはどちらですか。",
+   opts:[["soto","人と話しているうちに、軽くなってくる"],["uchi","一人でゆっくり過ごすと、落ち着いてくる"]]},
+  {axis:0, q:"初対面の人が多い場では、どちらが近いですか。",
+   opts:[["soto","自分から話しかけるほうだ"],["uchi","様子を見ながら、少しずつ慣れていくほうだ"]]},
+  {axis:1, q:"大切な人への気持ちは、どう表すことが多いですか。",
+   opts:[["kotoba","言葉にして、きちんと伝える"],["okonai","言葉より、行動や気配りで示す"]]},
+  {axis:1, q:"「ありがとう」を伝えるときは、どちらが多いですか。",
+   opts:[["kotoba","その場で、言葉にして伝える"],["okonai","後日、お返しや手伝いで示すことが多い"]]},
+  {axis:1, q:"けんかや行き違いの後は、どうしたいですか。",
+   opts:[["kotoba","話し合って、言葉でほどきたい"],["okonai","態度や時間で、少しずつ戻していきたい"]]},
+  {axis:2, q:"旅行の計画は、どちらが安心ですか。",
+   opts:[["tatemono","行き先や時間を、先に決めておく"],["nagare","大まかに決めて、あとはその場の流れで"]]},
+  {axis:2, q:"やることが多い日は、どう進めますか。",
+   opts:[["tatemono","順番を決めてから動く"],["nagare","手が届くところから、その都度進める"]]},
+  {axis:2, q:"予定が急に変わると、どちらが近いですか。",
+   opts:[["tatemono","少し戸惑う。立て直すのに時間がかかる"],["nagare","わりと平気。その場で合わせられる"]]}
+];
+
+/* 軸の組み合わせ → タイプ。キーは「軸1-軸2-軸3」 */
+var TYPES_A = {
+  "soto-kotoba-tatemono":{
+    name:"太陽のトリセツ", no:1,
+    spec:"人と過ごすことで元気が満ちて、気持ちを言葉にして伝えられる人。段取りを考えるのも苦ではなく、場の空気を明るくする力があります。あなたの周りに自然と人が集まるのは、その明るさと頼りがいのせいです。",
+    joy:"頑張りを言葉で認めてもらうこと。「ありがとう」「助かったよ」が、いちばんの燃料になります。一緒に笑える時間も大好物です。",
+    charge:"にぎやかな場や、気の合う人とのおしゃべりで回復します。予定が入っているほうが、かえって元気でいられるタイプです。",
+    caution:"忙しく動き続けていると、自分の疲れに気づくのが遅れがちです。倒れる前に休む、を意識して。あと、言葉がまっすぐなぶん、疲れているときは言い方が強く出ることがあります。",
+    seen:"周りからは「いつも元気で、頼れる人」に見えています。弱音を吐くことが少ないので、たまに本音を見せると、周りはもっとあなたを大切にしたいと感じるはずです。",
+    share:"明るさと頼りがいが同居する、太陽みたいな人"
+  },
+  "soto-kotoba-nagare":{
+    name:"風のトリセツ", no:2,
+    spec:"人と話すことが大好きで、思いついたことを言葉にするのが早い人。その場の流れを読む力があり、初めての場所でも自然になじめます。あなたの自由な発想は、周りの人の視野まで広げています。",
+    joy:"新しい場所や、新しい人との出会い。「面白そう」と感じる体験への誘いは、心が躍ります。話を面白がって聞いてもらえることも大好物です。",
+    charge:"気分転換の外出や、刺激のある会話で回復します。同じ場所にじっとしているより、風のように動いているほうが調子のいいタイプです。",
+    caution:"興味が次々移るので、「飽きっぽい」と誤解されることがあります。でもそれは、好奇心が強い証拠です。大切な約束だけは、メモに残す工夫を。",
+    seen:"周りからは「自由で、話していて楽しい人」に見えています。実は繊細なところもあるのですが、明るさのほうが先に伝わるタイプです。",
+    share:"話すほど元気になる、風みたいな人"
+  },
+  "soto-okonai-tatemono":{
+    name:"大地のトリセツ", no:3,
+    spec:"言葉より先に手が動き、頼まれたことを着実に形にしていく人。約束を守り、段取りを整える力があり、あなたの周りでは物事が静かに前に進みます。その安定感は、周りの人の安心の土台です。",
+    joy:"「助かった」「あなたがいてよかった」と、働きを認めてもらうこと。派手な褒め言葉より、具体的な感謝が響きます。",
+    charge:"人と協力して何かを成し遂げる時間や、体を動かすことで回復します。成果が見える作業は、あなたにとってのごほうびです。",
+    caution:"頼られると断れず、抱え込みやすいタイプです。「できません」と言う練習は、あなたを守る技術です。あと、言葉が少なめなので、気持ちはたまに言葉にすると誤解が減ります。",
+    seen:"周りからは「しっかり者で、安心できる人」に見えています。甘えるのが苦手そうに見えるので、周りが気づいて声をかけてくれることも、大切な縁です。",
+    share:"言葉より行動で示す、大地みたいに頼れる人"
+  },
+  "soto-okonai-nagare":{
+    name:"川のトリセツ", no:4,
+    spec:"その場の空気に合わせて、自然に動ける人。決めつけず、流れの中でいちばんいい形を見つける柔らかさがあります。あなたのそばにいると、人は肩の力を抜くことができます。",
+    joy:"美味しいものを一緒に食べることや、他愛のない楽しい時間。「一緒にやろう」と誘ってもらえることが、実はとてもうれしいタイプです。",
+    charge:"好きな人とゆるく過ごす時間や、自然の中でのんびりすることで回復します。予定が詰まっていない休日が、あなたには必要です。",
+    caution:"合わせ上手なぶん、自分の希望を後回しにしがちです。「私はこうしたい」を小さくでも口に出す練習を。流されやすさは優しさの裏返しですが、疲れる前に線引きを。",
+    seen:"周りからは「穏やかで、一緒にいて楽な人」に見えています。でも本当は、こだわりたいところには静かな芯がある人です。",
+    share:"合わせ上手で、そばにいるとほっとする人"
+  },
+  "uchi-kotoba-tatemono":{
+    name:"月のトリセツ", no:5,
+    spec:"一人の時間で心を整え、考えたことを言葉にできる人。静かな観察力があり、人の気持ちの変化にもよく気づきます。あなたの言葉には、考え抜かれた重みと優しさがあります。",
+    joy:"深い話をじっくり聞いてもらえること。あなたの考えに「なるほど」と向き合ってもらえると、心が開きます。静かな場所での一対一の時間も宝物です。",
+    charge:"一人の静かな時間で回復します。読書や書きもの、考えをまとめる時間が、あなたの心の整理整頓です。",
+    caution:"考えすぎて、自分を責める方向に進むことがあります。頭の中の会議は、紙に書き出すと静かになります。あと、人との予定が続くと電池が切れやすいので、回復の時間を先に予定に入れておいて。",
+    seen:"周りからは「落ち着いていて、少しミステリアスな人」に見えています。心を開いた相手にだけ見せる素顔との差に、惹かれる人も多いタイプです。",
+    share:"静かだけど、言葉に深みがある月のような人"
+  },
+  "uchi-kotoba-nagare":{
+    name:"星のトリセツ", no:6,
+    spec:"一人の時間に想像を広げ、感じたことを言葉にするのが得意な人。感受性が豊かで、人の気持ちや場の空気を、星を読むように感じ取ります。あなたの感性は、周りの人が見落とす美しさを見つけます。",
+    joy:"好きな世界に没頭できる時間と、その感動を分かち合える相手。「それ、いいね」と感性を受け止めてもらえると、とても喜びます。",
+    charge:"一人で好きなことに浸る時間で回復します。音楽や物語、空想の世界は、あなたの心の栄養です。",
+    caution:"感じ取る力が強いぶん、人の感情に引っ張られて疲れることがあります。「今の気持ちは、誰のもの？」と区切る習慣を。気分の波は欠点ではなく、感性の振れ幅です。",
+    seen:"周りからは「不思議な魅力のある、感性の人」に見えています。つかみどころがないように見えて、実は一人の人を深く大切にするタイプです。",
+    share:"感じ取る力が星のように冴えている人"
+  },
+  "uchi-okonai-tatemono":{
+    name:"森のトリセツ", no:7,
+    spec:"一人の時間で力を蓄え、決めたことを黙々とやり遂げる人。言葉は多くなくても、行動に嘘がありません。あなたの誠実さは、時間をかけて周りの信頼を育てていきます。",
+    joy:"静かに見守ってもらい、成果を認めてもらうこと。大勢の前で褒められるより、信頼できる人からの「ありがとう」が深く響きます。",
+    charge:"一人で黙々と取り組める時間や、自然に触れることで回復します。自分のペースを守れることが、あなたにとって何よりの休息です。",
+    caution:"我慢強さが裏目に出て、限界まで抱え込むことがあります。助けを求めるのは弱さではなく、森が雨を受け入れるような自然なことです。気持ちは、信頼できる人にだけでも言葉にしてみて。",
+    seen:"周りからは「口数は少ないけれど、信頼できる人」に見えています。近づくほど味が出る、静かな魅力の持ち主です。",
+    share:"黙々とやり遂げる、森のように深い信頼の人"
+  },
+  "uchi-okonai-nagare":{
+    name:"泉のトリセツ", no:8,
+    spec:"一人の静かな時間の中で、自分の感覚を大切に生きる人。無理に合わせず、その場の自然な流れの中で、さりげない優しさを行動で示します。あなたの穏やかさは、そばにいる人の心まで澄ませます。",
+    joy:"干渉されすぎず、自分のペースを尊重してもらうこと。美味しいものや心地よい場所を一緒に楽しむ、静かな共有の時間も好きです。",
+    charge:"一人のんびり過ごす時間と、五感が喜ぶ小さな楽しみで回復します。何もしない時間は、あなたにとって立派な充電です。",
+    caution:"争いを避けて、自分の気持ちを飲み込みやすいタイプです。小さな「嫌だ」を早めに伝えることが、結果的に関係を長持ちさせます。疲れたら、まず休む。順番を間違えないで。",
+    seen:"周りからは「穏やかで、つかみどころのない癒しの人」に見えています。実は芯のところで、譲れないものを静かに持っている人です。",
+    share:"穏やかさで周りを癒す、泉のような人"
+  }
+};
+
+/* answersA: 質問の並び順に、各質問で選んだ選択肢の値（未回答は null） */
+function judgeA(answers){
+  var axes = [[], [], []];
+  QUESTIONS_A.forEach(function(q, i){ axes[q.axis].push(answers[i]); });
+  var pair = [["soto","uchi"],["kotoba","okonai"],["tatemono","nagare"]];
+  var key = axes.map(function(vals, ai){
+    var c0 = vals.filter(function(v){ return v === pair[ai][0]; }).length;
+    var c1 = vals.filter(function(v){ return v === pair[ai][1]; }).length;
+    if(c0 > c1) return pair[ai][0];
+    if(c1 > c0) return pair[ai][1];
+    return vals[0]; /* 同数：その軸の最初の質問の答えを優先 */
+  });
+  return TYPES_A[key.join("-")];
+}
+
+/* ===== モードB：彼のトリセツ =====
+   既存の「彼の沈黙タイプ診断」の4タイプと対応。
+   各選択肢が1タイプに+1点。最多得点のタイプを結果とする。
+   同点のときは、Q2（直前の様子）とQ3（過去のパターン）の加点先を優先し、
+   それでも同点なら番号の小さいタイプを出す（既存診断の判定ルールを踏襲）。 */
+var QUESTIONS_B = [
+  {q:"彼から連絡が途絶えて（または返信が極端に遅くなって）、どれくらい経ちますか。",
+   opts:[[1,"数日ほど（まだ日が浅い）"],[2,"1〜2週間ほど"],[3,"1か月近く"],[4,"1か月以上、または、だんだん間隔が開いてきた"]]},
+  {q:"連絡が途絶える直前、最後のやり取りはどんな様子でしたか。",
+   opts:[[1,"いつも通りだったのに、急に止まった"],[2,"少し重い話（将来のこと、気持ちのこと）をした後だった"],[3,"ささいな行き違いや、少し険悪な空気の後だった"],[4,"特にきっかけは思い当たらず、なんとなく薄くなっていった"]]},
+  {q:"以前にも、似たような「黙る期間」はありましたか。",
+   opts:[[1,"ある。仕事が忙しい時期に重なることが多い"],[2,"ある。大事な話をした後に、しばらく黙ることがある"],[3,"ある。けんかや気まずさの後に、決まって黙る"],[4,"以前はなかった。今回が初めて、または今回だけ様子が違う"]]},
+  {q:"彼が疲れているとき、いちばん近い様子はどれですか。",
+   opts:[[1,"仕事や用事の話ばかりで、余裕がなさそう"],[2,"返事は短いけれど、言葉を選んでいる感じがする"],[3,"一人になりたそうで、そっとしておくと落ち着く"],[4,"以前より、自分のことを話さなくなった"]]},
+  {q:"彼が喜ぶのは、どんな言葉や態度ですか。",
+   opts:[[1,"「すごいね」「頼りになるね」と、頑張りを認める言葉"],[2,"気持ちを急がせず、じっくり聞いてくれる態度"],[3,"重くならない、軽い日常のやり取り"],[4,"正直、最近はよく分からない"]]},
+  {q:"二人で過ごす時間、彼はどんな過ごし方を好みますか。",
+   opts:[[1,"予定を詰めすぎず、自分の用事もこなせるペース"],[2,"静かに、深い話もできる時間"],[3,"気分転換になるような、楽しい外出や趣味の時間"],[4,"最近は、二人の時間が減ってきている気がする"]]},
+  {q:"けんかや行き違いの後、彼はどうすることが多いですか。",
+   opts:[[1,"忙しさにかまけて、その話は流れてしまう"],[2,"時間を置いてから、考えた様子で話してくる"],[3,"何事もなかったように、軽い話題から戻ってくる"],[4,"そのまま距離が開いた感じが続く"]]},
+  {q:"沈黙のあいだ、彼のSNSや様子に変化はありますか。",
+   opts:[[1,"仕事関係らしい投稿や、忙しそうな様子が見える"],[2,"変化はない。もともとSNSはあまり動かさない"],[3,"友人との外出など、気分転換らしい様子が見える"],[4,"以前は見せていた日常を、見せなくなった気がする"]]}
+];
+
+var TYPES_B = {
+  1:{
+    name:"頭の中が満員の沈黙", no:1,
+    spec:"彼は今、仕事や自分の問題で頭の中がいっぱいで、返信が後回しになっている見立てです。気持ちが冷めたのではなく、処理しきれないことが重なって、連絡に手が回っていない状態です。あなたが悪いわけではありません。",
+    joy:"「無理しないでね」「落ち着いたらでいいよ」など、急かさず、頑張りを認める言葉。短くても、重くない一言が届きやすいタイプです。",
+    deal:"返信の催促を重ねず、間隔を置いて軽い近況を一つ送るくらいに留めること。彼の中で山が越えるまで、あなたの生活リズムを崩さずに過ごすことが、結果として二人の空気を守ります。",
+    caution:"忙しさが続くと、彼は自分のことで精一杯になり、悪気なく連絡が空きます。「忙しい」は、このタイプにとっては言い訳ではなく、状態そのものだと思ってください。",
+    share:"忙しさで返信が後回しになっているだけかもしれない、という見立てでした"
+  },
+  2:{
+    name:"言葉を選んでいる沈黙", no:2,
+    spec:"大事な話ほど、言葉を選びすぎて返すのが遅くなる見立てです。彼にとってこの時間は「考えていない時間」ではなく、「考えすぎて動けない時間」かもしれません。気持ちがなくなった沈黙とは、性質が違います。",
+    joy:"「急がなくていいからね」「あなたの言葉で聞きたいな」など、答えを急がせず、言葉そのものを待ってくれる姿勢が伝わる言葉です。",
+    deal:"押すのではなく、引いて待つ静けさが大切です。重ねた連絡が、迷いを硬さに変えてしまうことがあります。待つあいだは、自分の予定を一つずつ楽しむくらいの余白を持ってください。",
+    caution:"このタイプは、適当な返事ができない人です。沈黙が長いほど、真剣に考えている場合があります。ただし、待つ時間の上限を自分で決めておくことも、あなたを守るために大切です。",
+    share:"考えていないのではなく、考えすぎているのかもしれない、という見立てでした"
+  },
+  3:{
+    name:"一度離れて、冷ます沈黙", no:3,
+    spec:"気持ちが高ぶると、一度距離を置いて落ち着こうとする見立てです。けんかや気まずさの後に黙るのは、関係を終わらせたいからではなく、熱くなったまま言葉をぶつけて傷つけたくない、という彼の調整のしかたかもしれません。",
+    joy:"「この前はごめんね」「また普通に話そう」など、過去を蒸し返さず、軽く戻れる入口を作る言葉です。何事もなかったような日常の話題も、このタイプには効きます。",
+    deal:"冷ます時間を奪わないこと。追いかけると、彼はさらに距離を取ります。数日置いてから、軽い話題を一つ。それ以上は重ねないのが、このタイプへの上手な距離です。",
+    caution:"感情が高ぶっている最中の長文や、結論を迫る話し合いは逆効果になりやすいタイプです。大事な話は、二人とも落ち着いているときに、短く区切って。",
+    share:"傷つけたくなくて、距離を置いて冷ましているのかもしれない、という見立てでした"
+  },
+  4:{
+    name:"気持ちの置き場が変わりつつある沈黙", no:4,
+    spec:"関係への気持ちの置き方が、少しずつ変わりつつある見立てです。はっきりした拒絶とは限りませんが、以前との違いが続いているなら、それは見て見ぬふりをしなくていいサインです。あなたの価値とは、関係のないことです。",
+    joy:"このタイプに「喜ぶ言葉」を探し続けること自体が、あなたを消耗させます。言葉を選ぶなら、彼のためではなく、あなた自身が後悔しないための一言に絞ってください。",
+    deal:"待つかどうか、待つならいつまでかを決めるのは、彼ではなくあなたです。「ここまで待ったら、次は自分のために動く」と、期限を自分の手に取り戻してください。その決め方自体が、あなたを守ります。",
+    caution:"変化の理由を、全部自分のせいにしないこと。関係の形が変わることは、どちらか一人が悪いから起きるのではありません。長く気持ちが沈むときは、一人で抱え込まず、身近な人や専門の窓口にも頼ってください。",
+    share:"待つかどうかを決めるのは自分、という見立てでした"
+  }
+};
+
+/* answersB: 質問の並び順に、各質問で選んだ選択肢の加点先タイプ番号（未回答は null） */
+function judgeB(answers){
+  var score = {1:0, 2:0, 3:0, 4:0};
+  answers.forEach(function(t){ if(t) score[t]++; });
+  var max = Math.max(score[1], score[2], score[3], score[4]);
+  var tied = [1,2,3,4].filter(function(t){ return score[t] === max; });
+  if(tied.length === 1) return TYPES_B[tied[0]];
+  /* 同点：Q2（index 1）とQ3（index 2）の加点先を優先 */
+  var priority = [answers[1], answers[2]];
+  for(var i=0;i<priority.length;i++){
+    if(priority[i] && tied.indexOf(priority[i]) >= 0) return TYPES_B[priority[i]];
+  }
+  return TYPES_B[tied[0]]; /* それでも同点なら番号の小さいタイプ */
+}
+
+/* ===== データと判定（ここまで） ===== */
+
+/* ===== 画面の動作 ===== */
+function buildQuestions(boxId, questions, answers, onChange){
+  var box = document.getElementById(boxId);
+  questions.forEach(function(item, qi){
+    var div = document.createElement("div");
+    div.className = "q";
+    var p = document.createElement("p");
+    p.innerHTML = '<span class="qnum">Q' + (qi + 1) + "．</span>";
+    p.appendChild(document.createTextNode(item.q));
+    div.appendChild(p);
+    var opts = document.createElement("div");
+    opts.className = "opts";
+    item.opts.forEach(function(o){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "obtn";
+      b.textContent = o[1];
+      b.addEventListener("click", function(){
+        answers[qi] = o[0];
+        var sib = opts.querySelectorAll(".obtn");
+        for(var i=0;i<sib.length;i++) sib[i].classList.remove("sel");
+        b.classList.add("sel");
+        onChange();
+      });
+      opts.appendChild(b);
+    });
+    div.appendChild(opts);
+    box.appendChild(div);
+  });
+}
+
+function setShare(prefix, text){
+  var enc = encodeURIComponent(text);
+  document.getElementById("shareX" + prefix).href = "https://twitter.com/intent/tweet?text=" + enc;
+  document.getElementById("shareThreads" + prefix).href = "https://www.threads.net/intent/post?text=" + enc;
+}
+
+/* モード切替 */
+function switchMode(mode){
+  document.getElementById("tabA").classList.toggle("sel", mode === "A");
+  document.getElementById("tabB").classList.toggle("sel", mode === "B");
+  document.getElementById("panelA").classList.toggle("open", mode === "A");
+  document.getElementById("panelB").classList.toggle("open", mode === "B");
+}
+document.getElementById("tabA").addEventListener("click", function(){ switchMode("A"); });
+document.getElementById("tabB").addEventListener("click", function(){ switchMode("B"); });
+
+/* モードA */
+var answersA = [null,null,null,null,null,null,null,null,null,null];
+buildQuestions("questionsA", QUESTIONS_A, answersA, function(){
+  document.getElementById("goA").disabled = !answersA.every(function(x){ return x !== null; });
+  document.getElementById("errA").textContent = "";
+});
+document.getElementById("goA").addEventListener("click", function(){
+  if(!answersA.every(function(x){ return x !== null; })){
+    document.getElementById("errA").textContent = "全10問に答えてください。";
+    return;
+  }
+  var t = judgeA(answersA);
+  document.getElementById("typeNameA").textContent = t.name;
+  document.getElementById("typeSubA").textContent = "タイプ " + t.no + " ／ 全8タイプ";
+  document.getElementById("specA").textContent = t.spec;
+  document.getElementById("joyA").textContent = t.joy;
+  document.getElementById("lineKeywordA").textContent = "「トリセツ" + t.no + "」";
+  setShare("A", "ワタシのトリセツ診断、私の結果は『" + t.name + "』でした。" + t.share + "。 #ワタシのトリセツ診断");
+  var result = document.getElementById("resultA");
+  result.style.display = "block";
+  document.getElementById("shareA").style.display = "block";
+  document.getElementById("lineA").style.display = "block";
+  result.scrollIntoView({behavior:"smooth", block:"start"});
+});
+document.getElementById("againA").addEventListener("click", function(){
+  document.getElementById("resultA").style.display = "none";
+  document.getElementById("shareA").style.display = "none";
+  document.getElementById("lineA").style.display = "none";
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+
+/* モードB */
+var answersB = [null,null,null,null,null,null,null,null];
+buildQuestions("questionsB", QUESTIONS_B, answersB, function(){
+  document.getElementById("goB").disabled = !answersB.every(function(x){ return x !== null; });
+  document.getElementById("errB").textContent = "";
+});
+document.getElementById("goB").addEventListener("click", function(){
+  if(!answersB.every(function(x){ return x !== null; })){
+    document.getElementById("errB").textContent = "全8問に答えてください。";
+    return;
+  }
+  var t = judgeB(answersB);
+  document.getElementById("typeNameB").textContent = t.name;
+  document.getElementById("typeSubB").textContent = "彼の沈黙タイプ " + t.no + " ／ 全4タイプ";
+  document.getElementById("specB").textContent = t.spec;
+  document.getElementById("joyB").textContent = t.joy;
+  document.getElementById("lineKeywordB").textContent = "「トリセツ" + (t.no + 8) + "」";
+  setShare("B", "彼のトリセツ診断、彼の結果は『" + t.name + "』でした。" + t.share + "。 #彼のトリセツ診断");
+  var result = document.getElementById("resultB");
+  result.style.display = "block";
+  document.getElementById("shareB").style.display = "block";
+  document.getElementById("lineB").style.display = "block";
+  document.getElementById("paidB").style.display = "block";
+  result.scrollIntoView({behavior:"smooth", block:"start"});
+});
+document.getElementById("againB").addEventListener("click", function(){
+  document.getElementById("resultB").style.display = "none";
+  document.getElementById("shareB").style.display = "none";
+  document.getElementById("lineB").style.display = "none";
+  document.getElementById("paidB").style.display = "none";
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+</script>
+</body>
+</html>
