@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>生きる意味の迷いタイプ診断｜蓮空</title>
+<meta property="og:title" content="生きる意味の迷いタイプ診断｜蓮空">
+<meta property="og:description" content="「何のために生きているのか分からない」。5つの質問で、あなたの迷いのタイプ（虚しさ／死への怖さ／喪失の悲しみ／自分の不在への案じ）と、タイプに合わせた問いが分かります。無料です。">
+<meta property="og:type" content="website">
+<!--
+生きる意味の迷いタイプ診断 実装メモ（2026-11-24）
+
+■ 位置づけ
+診断サイト量産 第1弾（蓮空分）。えもんのため息タイプ診断と同じ型：
+5問に答える → 結果画面ではタイプ名と基本傾向だけを見せる（ちょい見せ）
+→ タイプに合わせた「問い」は LINE キーワード「迷い1」〜「迷い4」で届ける
+→ 保存版『魂の棚卸しシート（はじめの一枚）』はメール登録で届ける。
+
+■ 判定ロジック
+5問の回答をタイプ別に数え、最多数のタイプを結果とする。
+同点の場合は、質問1の回答を優先する（えもん診断と同じルール）。
+
+■ メール登録
+このページは受け皿（renku-receiver）自身が /shindan で配信するため、
+フォームは同一オリジンの POST /api/register へ送る（CORS不要）。
+src は URLパラメータ ?src=xxx を引き継ぎ、結果タイプを付けて記録する。
+
+■ LINEキーワード「迷い1」〜「迷い4」は、LINE公式アカウント側の
+キーワード応答の設定が別途必要（原稿は content-pipeline の
+2026-11-24-shindan-launch/LINE深掘り原稿_蓮空.md）。
+-->
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; background: linear-gradient(180deg, #f7f5f0 0%, #efe9dd 100%); color: #33302b; min-height: 100vh; }
+.wrap { max-width: 640px; margin: 0 auto; padding: 24px 16px 48px; }
+.card { background: #fffefa; border-radius: 16px; padding: 32px 24px; box-shadow: 0 4px 24px rgba(90, 78, 58, 0.10); }
+h1 { font-size: 26px; line-height: 1.6; color: #4a4238; text-align: center; margin-bottom: 12px; letter-spacing: 0.06em; }
+.sub { text-align: center; font-size: 15.5px; line-height: 2.0; color: #6b5f4f; margin-bottom: 24px; }
+.badge { display: inline-block; background: #efe9dd; color: #6b5d4f; border-radius: 999px; padding: 4px 14px; font-size: 13px; margin-bottom: 16px; }
+.center { text-align: center; }
+.btn { display: block; width: 100%; border: none; cursor: pointer; border-radius: 999px; padding: 16px 20px; font-size: 17px; font-weight: bold; transition: transform .15s, box-shadow .15s; font-family: inherit; }
+.btn-main { background: #6b5d4f; color: #fff; box-shadow: 0 4px 14px rgba(107, 93, 79, .3); }
+.btn-main:hover { transform: translateY(-2px); }
+.btn-line { background: #06c755; color: #fff; box-shadow: 0 4px 14px rgba(6,199,85,.3); text-decoration: none; text-align: center; margin-top: 12px; }
+.btn-ghost { background: #efe9dd; color: #6b5f4f; margin-top: 12px; }
+.progress { height: 8px; background: #e7dfcf; border-radius: 999px; overflow: hidden; margin-bottom: 8px; }
+.progress > div { height: 100%; background: #a08b6d; border-radius: 999px; transition: width .3s; }
+.qcount { font-size: 13px; color: #a08b6d; text-align: right; margin-bottom: 16px; }
+.qtext { font-size: 19px; line-height: 1.7; font-weight: bold; color: #4a4238; margin-bottom: 20px; }
+.choice { display: block; width: 100%; text-align: left; background: #faf7ef; border: 2px solid #e0d6c0; border-radius: 14px; padding: 16px 18px; font-size: 15.5px; line-height: 1.7; color: #3d362c; cursor: pointer; margin-bottom: 12px; transition: border-color .15s, background .15s; font-family: inherit; }
+.choice:hover { border-color: #a08b6d; background: #f5efe0; }
+.rtype { font-size: 25px; font-weight: bold; color: #6b5d4f; text-align: center; margin: 8px 0; line-height: 1.5; }
+.disclaimer { font-size: 13px; line-height: 1.8; color: #97836a; text-align: center; margin-bottom: 20px; }
+.rbody { font-size: 16px; line-height: 2.0; margin-bottom: 16px; }
+.related { font-size: 15px; line-height: 1.9; margin-bottom: 20px; }
+.related a { color: #6b5d4f; }
+.prep { background: #f7f3ea; border: 2px dashed #ddd0b4; border-radius: 14px; padding: 16px 18px; font-size: 14px; line-height: 1.8; color: #6b5f4f; margin-top: 20px; }
+.prep .ptitle { font-weight: bold; color: #4a4238; margin-bottom: 4px; }
+.note { font-size: 13px; line-height: 1.8; color: #97836a; margin-top: 16px; }
+.ladder { background: #faf7ef; border: 2px solid #e0d6c0; border-radius: 14px; padding: 18px; margin-bottom: 20px; }
+.ladder .ltitle { font-size: 16.5px; font-weight: bold; color: #4a4238; margin-bottom: 12px; }
+.ladder .step { font-size: 14.5px; line-height: 1.9; margin-bottom: 14px; }
+.ladder .step:last-child { margin-bottom: 0; }
+.ladder .sname { font-weight: bold; color: #6b5d4f; }
+.ladder a { color: #6b5d4f; font-weight: bold; }
+.sharebox { background: linear-gradient(180deg, #101a3d 0%, #1d3260 100%); border-radius: 16px; padding: 24px 18px; margin-bottom: 20px; text-align: center; }
+.sharetitle { font-size: 15px; letter-spacing: 0.12em; color: #cfd8ee; margin-bottom: 6px; }
+.sharepct { font-size: 56px; font-weight: bold; color: #e9cd7a; line-height: 1.2; }
+.sharepct-unit { font-size: 30px; }
+.progress-result { background: rgba(255,255,255,.18); margin: 12px 4px 4px; }
+.progress-result > div { background: #e9cd7a; }
+.share-note { font-size: 13px; line-height: 1.8; color: #cfd8ee; margin: 10px 4px 16px; }
+.sharecanvas { width: 100%; height: auto; border-radius: 10px; display: block; margin-bottom: 14px; }
+.btn-sharex { background: #14171a; color: #fff; box-shadow: 0 4px 14px rgba(20,23,26,.3); margin-top: 12px; }
+.sharebox .note { color: #aebadd; }
+.hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- スタート画面 -->
+<div id="screen-start" class="card">
+<div class="center"><span class="badge">無料・5つの質問・約2分</span></div>
+<h1>生きる意味の迷いタイプ診断</h1>
+<p class="sub">「何のために生きているのか、分からない」。<br>その迷いにも、タイプがあります。5つの質問で、あなたの迷いのタイプと、タイプに合わせた問いをお渡しします。</p>
+<button class="btn btn-main" onclick="startQuiz()">診断をはじめる</button>
+<p class="note">この診断は、医療的な診断ではありません。今の気持ちを静かに分けて見るための、目安です。気持ちが沈んでつらい時は、一人で抱えず、身近な人や相談窓口も頼ってください。</p>
+</div>
+
+<!-- 質問画面 -->
+<div id="screen-quiz" class="card hidden">
+<div class="progress"><div id="bar" style="width:0%"></div></div>
+<div class="qcount" id="qcount"></div>
+<div class="qtext" id="qtext"></div>
+<div id="choices"></div>
+</div>
+
+<!-- 結果画面 -->
+<div id="screen-result" class="card hidden">
+<div class="center"><span class="badge">あなたの迷いのタイプは</span></div>
+<div class="rtype" id="rtype"></div>
+<p class="disclaimer">この結果は、医療的な診断ではありません。今の気持ちを分けて見るための目安です。</p>
+<p class="rbody" id="rbody"></p>
+<div class="sharebox">
+<div class="sharetitle">心の棚卸しの進み具合（目安）</div>
+<div class="sharepct"><span id="rpct">--</span><span class="sharepct-unit">％</span></div>
+<div class="progress progress-result"><div id="rbar" style="width:0%"></div></div>
+<p class="share-note">これは医療や専門家の評価ではなく、気持ちを言葉にする旅の現在地の目安です。何％でも、間違いではありません。</p>
+<canvas id="shareCanvas" width="1200" height="630" class="sharecanvas" aria-label="結果シェア画像"></canvas>
+<button class="btn btn-main" type="button" onclick="downloadShareImage()">結果画像を保存する</button>
+<button class="btn btn-sharex" type="button" onclick="shareOnX()">Xでシェアする</button>
+<p class="note">「結果画像を保存する」で、進捗％入りの画像を手元に残せます。Xでシェアするときは、保存した画像を添付すると、画像つきで投稿できます。</p>
+</div>
+<div class="ladder">
+<div class="ltitle">ここから先は、3つの受け取り方があります</div>
+<div class="step"><span class="sname">① LINEで、あなたのタイプの問いを受け取る</span><br>
+あなたのタイプに合わせた「問い」は、この先に置きました。LINEで「<span id="rkeyword"></span>」と送ると届きます。問いへの答えは、急がなくて大丈夫です。</div>
+<div class="step"><span class="sname">② メールで、保存版を受け取る</span><br>
+特典『魂の棚卸しシート（はじめの一枚）』の保存版は、メールでお届けします。下のフォームから登録できます。印刷して、手元に置ける形です。</div>
+<div class="step"><span class="sname">③ もっと深く考えたい方へ</span><br>
+7つの問いの完全版シートは、LINEで「完全版」と送ると届きます。さらに問いを深めたい方には、教材「魂の生前整理ノート ― 30の問い」と、一対一の手紙「問いの時間」があります。<br>
+<a href="https://note.com/renkuu/n/ndbd6d1edffba" target="_blank" rel="noopener">魂の生前整理ノート ― 30の問い（note）</a><br>
+<a href="https://note.com/renkuu/n/n7a6e2551958a" target="_blank" rel="noopener">問いの時間 ― 蓮空との一対一の手紙（note）</a></div>
+</div>
+<p class="rbody">受け取り方は3つだけです。<br>
+① 下のボタンを押します<br>
+② 「追加」を押します<br>
+③ 届いた画面で「<span id="rkeyword2"></span>」と送ります</p>
+<a class="btn btn-line" href="https://lin.ee/zm0MQWE" target="_blank" rel="noopener">LINEで、あなたのタイプの問いを受け取る</a>
+<p class="note">LINEで受け取る場合は、友だち追加のあと、「<span id="rkeyword3"></span>」と送ってください。配信が不要になったら、いつでもブロックで止められます。</p>
+<div class="prep">
+<div class="ptitle">メールでも受け取れます（無料）</div>
+<form id="mailform">
+<label>メールアドレス<br>
+<input type="email" name="email" required placeholder="you@example.com"
+ style="width:100%;padding:12px;font-size:16px;border:1px solid #cfc6b4;border-radius:8px;box-sizing:border-box;margin-top:6px;">
+</label>
+<input type="hidden" name="src" id="mf-src">
+<label style="display:block;margin-top:10px;font-size:14px;">
+<input type="checkbox" name="consent_benefit" value="1" required>
+ 特典『魂の棚卸しシート（はじめの一枚）』の保存版の送付を希望します（必須）</label>
+<label style="display:block;margin-top:6px;font-size:14px;">
+<input type="checkbox" name="consent_newsletter" value="1">
+ 蓮空からの手紙（案内メール）を受け取ります（任意）</label>
+<button class="btn btn-main" type="submit" style="margin-top:14px;">メールで受け取る</button>
+<p class="note" id="mf-msg"></p>
+</form>
+</div>
+<button class="btn btn-ghost" onclick="location.reload()">もう一度診断する</button>
+<p class="note">蓮空｜生きる意味・魂の生前整理</p>
+</div>
+
+</div>
+
+<script>
+// ===== 流入元（src）の取得 =====
+const SRC = new URLSearchParams(location.search).get("src") || "shindan";
+
+// ===== 棚卸しスコア（2026-11-25 追加） =====
+// 各選択肢の第3要素が「棚卸しスコア」(0・1・2)：
+//   その気持ちを、言葉にして向き合えている度合い。
+//   2 = 対象・願い・経過など、具体的な言葉にできている
+//   1 = 気持ちに気づき、漠然とでも言葉にし始めている
+//   0 = 漠然とした不安・空しさ・受動的に浮かぶ段階にとどまっている
+// 進捗％ = 合計 / 最大(5問×2=10) × 100（四捨五入）。
+// タイプ判定（A〜Dの最多数）とは独立した軸で、タイプの優劣ではない。
+//
+// ■ 割り当て表（全20件）と根拠
+// Q1 最近、心に浮かぶのは
+//   A 虚しさを「何のために」という問いの形にできている … 1
+//   B 死の怖さが「ふと」受動的に浮かぶ段階 … 0
+//   C 対象（亡くした人）が明確に思い浮かんでいる … 1
+//   D 自分の不在と残される人への影響まで具体的に思い描けている … 2
+// Q2 夜、眠る前に考えること
+//   A 「何もなかった」という漠然とした空しさ … 0
+//   B 歳を重ねる流れを将来の不安として捉えている … 1
+//   C 「あの人に、もう一度会いたい」と対象と願いが明確 … 2
+//   D 家族への配慮として言葉になっているが、自分の気持ちはまだ奥 … 1
+// Q3 「生きる意味」について
+//   A 意味のなさを「毎日が同じ」という停滞の言葉で捉えている … 0
+//   B 「意味より先に終わりが怖い」と優先順位を自分の言葉で比べられている … 1
+//   C 喪失という出来事と、その後の経過を物語として言葉にできている … 2
+//   D 「誰の記憶にも残らない気がする」という漠然とした予感 … 1
+// Q4 人に言えないでいること
+//   A 「本当は」と本音として認める言葉になっている … 1
+//   B 怖さが「たまらない」という感情の生の強さのまま … 0
+//   C 「まだ立ち直れていない」と現在地を時間の言葉で位置づけられている … 2
+//   D 消えていくイメージはあるが、予感の段階 … 1
+// Q5 今、いちばん欲しいもの
+//   A〜D とも 2：Q5は「欲しいもの＝願い」を選ぶ問いであり、
+//   願いを言葉にして選べた時点で向き合いが進んでいるため全て2とした。
+//   このため進捗％は最低でも20％から始まる（0％で突き放さない設計）。
+const QUESTIONS = [
+{ q: "最近、いちばん心に浮かぶのは、どれですか", c: [
+["A", "「何のために生きているのだろう」という虚しさ", 1],
+["B", "死ぬことが、ふと怖くなること", 0],
+["C", "亡くした人のことを、思い出してしまうこと", 1],
+["D", "自分がいなくなった後のことが、心配になること", 2]]},
+{ q: "夜、眠る前に考えることは", c: [
+["A", "今日も何もなかった、という空しさ", 0],
+["B", "このまま歳を取っていくことへの不安", 1],
+["C", "あの人に、もう一度会いたいという気持ち", 2],
+["D", "家族に迷惑をかけたくない、という思い", 1]]},
+{ q: "「生きる意味」について、今の気持ちに近いものは", c: [
+["A", "意味が見つからず、毎日が同じに感じる", 0],
+["B", "意味より先に、終わりが来ることが怖い", 1],
+["C", "大切な人を失ってから、意味が分からなくなった", 2],
+["D", "自分の存在が、誰の記憶にも残らない気がする", 1]]},
+{ q: "人に言えないでいることは", c: [
+["A", "本当は、毎日が虚しいこと", 1],
+["B", "死ぬのが、怖くてたまらないこと", 0],
+["C", "まだ悲しみから、立ち直れていないこと", 2],
+["D", "誰にも気づかれずに消えていく気がすること", 1]]},
+{ q: "今、いちばん欲しいものは", c: [
+["A", "明日を生きる、小さな理由", 2],
+["B", "死への怖さを、少しでも和らげる言葉", 2],
+["C", "悲しみを、そのまま抱えていていいという許し", 2],
+["D", "自分が生きた証を、静かに残す方法", 2]]},
+];
+
+const RESULTS = {
+A: { keyword: "迷い1", name: "虚しさに沈むタイプ",
+body: "虚しさは、心が壊れたサインではありません。長く生きてきた人が、自分の時間の意味を問い直している姿です。あなたのタイプに合わせた問いは、LINEでお渡しします。" },
+B: { keyword: "迷い2", name: "死を思うと怖くなるタイプ",
+body: "死が怖いのは、弱いからではありません。生きてきた時間を大切に思うからこそ、終わりが怖いのです。怖さには分け方があり、分けてみると、少し静かになります。その問いは、LINEでお渡しします。" },
+C: { keyword: "迷い3", name: "喪失を抱えるタイプ",
+body: "悲しみが消えないのは、立ち直れていないからではありません。その人を、今も大切に思っているからです。悲しみと一緒に生きるための問いは、LINEでお渡しします。" },
+D: { keyword: "迷い4", name: "自分の不在を案じるタイプ",
+body: "自分がいなくなった後を案じる気持ちは、残される人たちへの、静かな愛情のかたちです。その気持ちを言葉にするための問いは、LINEでお渡しします。" },
+};
+
+let current = 0;
+let resultType = null;
+const answers = [];
+const answerScores = [];
+
+// ===== 診断結果の保存（第1段：診断タイプの保存） =====
+// 仮の識別子（visitor_id）をブラウザに残し、診断完了のたびに受け皿へ送る。
+// メール登録のときに同じ visitor_id を渡すことで、診断結果とメールが結びつく。
+function getVisitorId() {
+  try {
+    let v = localStorage.getItem("renku_visitor_id");
+    if (!v) {
+      v = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+        : "v" + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+      localStorage.setItem("renku_visitor_id", v);
+    }
+    return v;
+  } catch (e) { return ""; }
+}
+const VISITOR_ID = getVisitorId();
+function recordDiagnosis() {
+  try {
+    fetch("https://renku-receiver.onrender.com/api/diagnosis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        visitor_id: VISITOR_ID,
+        diagnosis_kind: "ikiruimi",
+        result_type: resultType,
+        answers: answers,
+        src: SRC,
+      }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch (e) { /* 保存に失敗しても診断の表示は続ける */ }
+}
+
+function startQuiz() {
+document.getElementById("screen-start").classList.add("hidden");
+document.getElementById("screen-quiz").classList.remove("hidden");
+showQuestion();
+}
+function showQuestion() {
+const item = QUESTIONS[current];
+document.getElementById("bar").style.width = (current / QUESTIONS.length * 100) + "%";
+document.getElementById("qcount").textContent = "質問 " + (current + 1) + " / " + QUESTIONS.length;
+document.getElementById("qtext").textContent = item.q;
+const box = document.getElementById("choices");
+box.innerHTML = "";
+item.c.forEach(([key, text, score]) => {
+const b = document.createElement("button");
+b.className = "choice";
+b.textContent = text;
+b.onclick = () => { answers.push(key); answerScores.push(score); current++; if (current < QUESTIONS.length) { showQuestion(); } else { showResult(); } };
+box.appendChild(b);
+});
+}
+// 判定：最多数のタイプ。同点の場合は質問1の回答を優先する。
+function judgeType() {
+const counts = { A: 0, B: 0, C: 0, D: 0 };
+answers.forEach(a => counts[a]++);
+const max = Math.max(counts.A, counts.B, counts.C, counts.D);
+const top = ["A", "B", "C", "D"].filter(k => counts[k] === max);
+if (top.length > 1) return answers[0];
+return top[0];
+}
+// ===== 棚卸し進捗％（目安）の算出 =====
+function calcProgressPct() {
+const total = answerScores.reduce((a, b) => a + b, 0);
+const max = QUESTIONS.length * 2;
+return Math.round(total / max * 100);
+}
+function todayJp() {
+const d = new Date();
+return d.getFullYear() + "年" + (d.getMonth() + 1) + "月" + d.getDate() + "日";
+}
+// ===== シェア画像（Canvas 1200×630）の描画 =====
+// 仕様は notes/シェア画像_生成指示文_2026-11-25.md と一致させること（PIL見本と同一仕様）。
+function drawShareImage(typeName, pct) {
+const cv = document.getElementById("shareCanvas");
+if (!cv || !cv.getContext) return;
+const ctx = cv.getContext("2d");
+const W = 1200, H = 630;
+const grad = ctx.createLinearGradient(0, 0, 0, H);
+grad.addColorStop(0, "#060a1e");
+grad.addColorStop(0.55, "#12234a");
+grad.addColorStop(1, "#1e3565");
+ctx.fillStyle = grad;
+ctx.fillRect(0, 0, W, H);
+// 星（決定的な疑似乱数で毎回同じ配置にする）
+let seed = 20261125;
+const rand = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+for (let i = 0; i < 90; i++) {
+  const x = 40 + rand() * 1120, y = 30 + rand() * 570;
+  const r = 0.8 + rand() * 1.8, a = 0.25 + rand() * 0.65;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = i % 7 === 0 ? "rgba(233,205,122," + a + ")" : "rgba(255,255,255," + a + ")";
+  ctx.fill();
+}
+// 金の二重枠
+ctx.strokeStyle = "#c9a227"; ctx.lineWidth = 3; ctx.strokeRect(24, 24, W - 48, H - 48);
+ctx.strokeStyle = "rgba(201,162,39,0.45)"; ctx.lineWidth = 1; ctx.strokeRect(36, 36, W - 72, H - 72);
+const SERIF = '"Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif';
+ctx.textAlign = "center"; ctx.textBaseline = "middle";
+try { ctx.letterSpacing = "6px"; } catch (e) {}
+ctx.fillStyle = "#e9cd7a";
+ctx.font = "bold 54px " + SERIF;
+ctx.fillText("心の棚卸し進捗診断", W / 2, 118);
+try { ctx.letterSpacing = "2px"; } catch (e) {}
+ctx.fillStyle = "#cfd8ee";
+ctx.font = "26px " + SERIF;
+ctx.fillText("生きる意味の迷いタイプ診断", W / 2, 170);
+ctx.strokeStyle = "#c9a227"; ctx.lineWidth = 2;
+ctx.beginPath(); ctx.moveTo(W / 2 - 120, 205); ctx.lineTo(W / 2 + 120, 205); ctx.stroke();
+ctx.fillStyle = "#aebadd";
+ctx.font = "24px " + SERIF;
+ctx.fillText("あなたのタイプ", W / 2, 256);
+ctx.fillStyle = "#ffffff";
+ctx.font = "bold 46px " + SERIF;
+ctx.fillText(typeName, W / 2, 316);
+ctx.fillStyle = "#cfd8ee";
+ctx.font = "26px " + SERIF;
+ctx.fillText("心の棚卸しの進み具合（目安）", W / 2, 388);
+ctx.fillStyle = "#e9cd7a";
+ctx.font = "bold 108px " + SERIF;
+ctx.fillText(pct + "％", W / 2, 478);
+ctx.fillStyle = "#aebadd";
+ctx.font = "24px " + SERIF;
+ctx.fillText(todayJp(), W / 2, 540);
+ctx.fillStyle = "#e9cd7a";
+ctx.font = "24px " + SERIF;
+ctx.fillText("蓮空｜生きる意味・魂の生前整理", W / 2, 578);
+}
+let sharePct = null;
+function downloadShareImage() {
+const cv = document.getElementById("shareCanvas");
+if (!cv) return;
+const name = "renku-tanaoroshi-" + new Date().toISOString().slice(0, 10) + ".png";
+if (cv.toBlob) {
+  cv.toBlob((blob) => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }, "image/png");
+} else {
+  const a = document.createElement("a");
+  a.href = cv.toDataURL("image/png");
+  a.download = name;
+  a.click();
+}
+}
+function shareOnX() {
+const r = RESULTS[resultType];
+const text = "生きる意味の迷いタイプ診断で、私は「" + r.name + "」でした。心の棚卸しの進み具合（目安）は" + sharePct + "％です。";
+const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text)
+  + "&url=" + encodeURIComponent("https://mirai-sensei.github.io/shindan/renku/");
+window.open(url, "_blank", "noopener");
+}
+function showResult() {
+document.getElementById("screen-quiz").classList.add("hidden");
+document.getElementById("screen-result").classList.remove("hidden");
+resultType = judgeType();
+recordDiagnosis();
+document.getElementById("mf-src").value = SRC + "_" + resultType;
+const r = RESULTS[resultType];
+document.getElementById("rtype").textContent = r.name;
+document.getElementById("rbody").textContent = r.body;
+document.getElementById("rkeyword").textContent = r.keyword;
+document.getElementById("rkeyword2").textContent = r.keyword;
+document.getElementById("rkeyword3").textContent = r.keyword;
+sharePct = calcProgressPct();
+document.getElementById("rpct").textContent = sharePct;
+document.getElementById("rbar").style.width = sharePct + "%";
+drawShareImage(r.name, sharePct);
+}
+
+// ===== メール登録フォームの送信処理（受け皿 POST /api/register） =====
+document.getElementById("mailform").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const payload = Object.fromEntries(fd.entries());
+  payload.consent_benefit = fd.get("consent_benefit") ? "1" : "";
+  payload.consent_newsletter = fd.get("consent_newsletter") ? "1" : "";
+  payload.visitor_id = VISITOR_ID;
+  const msg = document.getElementById("mf-msg");
+  try {
+    const res = await fetch("https://renku-receiver.onrender.com/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      msg.textContent = "ありがとうございます。特典『魂の棚卸しシート（はじめの一枚）』の保存版は、このあとメールでお届けします。届かない場合は、迷惑メールフォルダもご確認ください。";
+      e.target.querySelector("button").disabled = true;
+    } else {
+      msg.textContent = data.error || "登録できませんでした。";
+    }
+  } catch (err) {
+    msg.textContent = "通信に失敗しました。時間をおいてお試しください。";
+  }
+});
+</script>
+</body>
+</html>
