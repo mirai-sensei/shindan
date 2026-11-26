@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>恋愛相性診断｜タクスー霊視 みらい先生</title>
+<meta name="description" content="あなたと彼の16タイプから、恋愛の相性を読み解く診断です。総合点だけでなく「あなたから見た彼」「彼から見たあなた」の向き別の点も出ます。">
+<style>
+  :root{
+    --bg:#fdf7f4;
+    --card:#ffffff;
+    --ink:#3a3230;
+    --sub:#8a7a74;
+    --accent:#d6336c;
+    --accent-soft:#fdeef2;
+    --line:#f3d9de;
+    --gold:#b98a2f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,"Noto Sans JP",sans-serif;
+    font-size:17px;
+    line-height:1.8;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:24px 16px 56px;}
+  header.top{text-align:center;padding:24px 0 8px;}
+  .brand{color:var(--gold);letter-spacing:.35em;font-size:13px;}
+  h1{font-size:27px;margin:10px 0 6px;font-weight:600;letter-spacing:.06em;}
+  .lead{color:var(--sub);font-size:15px;margin:0 auto;max-width:32em;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:22px 18px;
+    margin:20px 0;
+    box-shadow:0 2px 10px rgba(214,51,108,.05);
+  }
+  h2{font-size:19px;margin:0 0 6px;font-weight:600;}
+  h2 .who{color:var(--accent);}
+  .note{color:var(--sub);font-size:14px;margin:4px 0 12px;}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .tbtn{
+    appearance:none;border:1px solid var(--line);background:#fff;border-radius:12px;
+    padding:10px 2px 8px;cursor:pointer;text-align:center;color:var(--ink);
+    font-family:inherit;
+  }
+  .tbtn .code{display:block;font-size:16px;letter-spacing:.05em;}
+  .tbtn .nick{display:block;font-size:11px;color:var(--sub);margin-top:1px;}
+  .tbtn.sel{border-color:var(--accent);background:var(--accent-soft);}
+  .tbtn.sel .code{color:var(--accent);}
+  .helper-toggle{
+    display:inline-block;margin-top:14px;color:var(--accent);background:none;border:none;
+    font-size:15px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:0;
+  }
+  .helper{display:none;margin-top:14px;border-top:1px dashed var(--line);padding-top:14px;}
+  .helper.open{display:block;}
+  .q{margin:0 0 14px;}
+  .q p{margin:0 0 6px;font-size:15px;}
+  .opts{display:flex;gap:8px;flex-wrap:wrap;}
+  .obtn{
+    flex:1;min-width:140px;appearance:none;border:1px solid var(--line);background:#fff;
+    border-radius:12px;padding:10px;cursor:pointer;font-size:14px;color:var(--ink);font-family:inherit;
+    text-align:left;line-height:1.5;
+  }
+  .obtn.sel{border-color:var(--accent);background:var(--accent-soft);}
+  .go{
+    display:block;width:100%;margin:22px 0 0;padding:16px;border:none;border-radius:999px;
+    background:var(--accent);color:#fff;font-size:18px;cursor:pointer;font-family:inherit;letter-spacing:.08em;
+  }
+  .go:disabled{background:#e5c9d1;cursor:default;}
+  .err{color:var(--accent);font-size:14px;text-align:center;min-height:1.5em;margin:8px 0 0;}
+  /* 結果 */
+  #result{display:none;}
+  .score-head{text-align:center;}
+  .score-label{color:var(--sub);font-size:14px;letter-spacing:.2em;}
+  .score-big{font-size:56px;line-height:1.15;color:var(--accent);font-weight:600;}
+  .score-big small{font-size:22px;}
+  .comment{font-size:18px;text-align:center;margin:10px 0 4px;}
+  .dirs{display:flex;gap:10px;margin-top:18px;}
+  .dir{
+    flex:1;background:var(--accent-soft);border-radius:14px;padding:14px 10px;text-align:center;
+  }
+  .dir .dlabel{font-size:13px;color:var(--sub);line-height:1.5;}
+  .dir .dscore{font-size:30px;color:var(--accent);font-weight:600;}
+  .dir .dscore small{font-size:15px;}
+  .reading{margin-top:18px;}
+  .reading p{margin:0 0 10px;}
+  .meyasu{font-size:13px;color:var(--sub);border-top:1px dashed var(--line);padding-top:10px;}
+  .linebox{
+    background:#f2fbf3;border:1px solid #cfe8cf;border-radius:18px;padding:22px 18px;margin:20px 0;text-align:center;
+  }
+  .linebox h2{color:#2e7d32;}
+  .linebtn{
+    display:inline-block;margin-top:10px;background:#06c755;color:#fff;text-decoration:none;
+    padding:14px 34px;border-radius:999px;font-size:17px;letter-spacing:.05em;
+  }
+  .lineid{color:var(--sub);font-size:14px;margin-top:10px;}
+  .free-note{
+    display:inline-block;margin:12px 0 0;padding:5px 16px;border:1px solid var(--accent);
+    color:var(--accent);border-radius:999px;font-size:14px;background:var(--accent-soft);
+  }
+  .sharebox{border-top:1px dashed var(--line);margin-top:18px;padding-top:16px;}
+  .sharebox h2{font-size:16px;}
+  .sharetext{
+    background:var(--bg);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;font-size:14px;line-height:1.7;white-space:pre-wrap;word-break:break-all;
+  }
+  .sharebtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .sbtn{
+    flex:1;min-width:100px;text-align:center;appearance:none;border:1px solid var(--line);
+    background:#fff;border-radius:999px;padding:10px 6px;cursor:pointer;font-size:14px;
+    color:var(--ink);font-family:inherit;text-decoration:none;
+  }
+  .sbtn.x{background:#000;color:#fff;border-color:#000;}
+  .sbtn.th{background:#fff;color:#000;border-color:#000;}
+  .paidbox{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:22px 18px;margin:20px 0;
+  }
+  .paiditem{border-top:1px dashed var(--line);padding:14px 0 4px;margin-top:12px;}
+  .paidname{font-size:16px;font-weight:600;}
+  .paidprice{color:var(--accent);font-size:15px;}
+  .paiditem p{margin:6px 0;font-size:15px;}
+  .paidbtn{
+    display:inline-block;margin-top:6px;border:1px solid var(--accent);color:var(--accent);
+    text-decoration:none;padding:9px 22px;border-radius:999px;font-size:15px;
+  }
+  .again{display:block;margin:18px auto 0;background:none;border:none;color:var(--sub);
+    text-decoration:underline;cursor:pointer;font-size:15px;font-family:inherit;}
+  footer{text-align:center;color:var(--sub);font-size:13px;margin-top:28px;}
+  @media (max-width:380px){ .grid{grid-template-columns:repeat(4,1fr);gap:6px;} .tbtn .code{font-size:14px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">― 診 断 ―</div>
+    <h1>恋愛相性診断</h1>
+    <p class="lead">あなたと彼のタイプから、二人の相性を読み解きます。<br>
+    総合点だけでなく、「あなたから見た彼」と「彼から見たあなた」、向き別の点も出るのが、この診断の特徴です。</p>
+    <p class="free-note">無料・登録なしで、結果の入口まで見られます</p>
+  </header>
+
+  <div class="card">
+    <p style="margin:0;">タイプは、性格の傾向を16に分けたものです。彼の気持ちそのものを言い当てるものではありません。点数は目安として、今の二人の距離を眺める材料にしてください。</p>
+    <p class="note" style="margin-bottom:0;">選んだ内容がどこかへ送信されることはありません。</p>
+  </div>
+
+  <div class="card" id="selfCard">
+    <h2><span class="who">あなた</span>のタイプ</h2>
+    <p class="note">16タイプから、いちばん近いものを選んでください。</p>
+    <div class="grid" id="selfGrid"></div>
+    <button type="button" class="helper-toggle" data-helper="selfHelper">タイプが分からない方はこちら（4つの質問で決めます）</button>
+    <div class="helper" id="selfHelper"></div>
+  </div>
+
+  <div class="card" id="partnerCard">
+    <h2><span class="who">彼</span>のタイプ</h2>
+    <p class="note">彼の様子から、いちばん近いものを選んでください。</p>
+    <div class="grid" id="partnerGrid"></div>
+    <button type="button" class="helper-toggle" data-helper="partnerHelper">彼のタイプが分からない方はこちら（4つの質問で決めます）</button>
+    <div class="helper" id="partnerHelper"></div>
+  </div>
+
+  <button type="button" class="go" id="goBtn" disabled>相性を読み解く</button>
+  <p class="err" id="errMsg"></p>
+
+  <div class="card" id="result">
+    <div class="score-head">
+      <div class="score-label">恋 愛 相 性</div>
+      <div class="score-big"><span id="totalScore">--</span><small> 点</small></div>
+      <p class="comment" id="oneComment"></p>
+    </div>
+    <div class="dirs">
+      <div class="dir">
+        <div class="dlabel" id="dirABLabel">あなたから見た彼</div>
+        <div class="dscore"><span id="dirAB">--</span><small> 点</small></div>
+      </div>
+      <div class="dir">
+        <div class="dlabel" id="dirBALabel">彼から見たあなた</div>
+        <div class="dscore"><span id="dirBA">--</span><small> 点</small></div>
+      </div>
+    </div>
+    <div class="reading" id="reading"></div>
+    <p class="meyasu">この点数は、タイプの組み合わせから計算した目安です。実際の二人の関係は、日々の言葉と行動で変わっていきます。点数に振り回されず、眺める材料にしてください。</p>
+    <div class="sharebox">
+      <h2>結果をシェアする</h2>
+      <p class="note">診断結果の文案を用意しました。そのままコピーして、XやThreadsへの投稿に使えます（自動で送信されることはありません）。</p>
+      <div class="sharetext" id="shareText"></div>
+      <div class="sharebtns">
+        <button type="button" class="sbtn" id="copyBtn">文案をコピー</button>
+        <a class="sbtn x" id="xBtn" href="#" target="_blank" rel="noopener">Xで投稿する</a>
+        <a class="sbtn th" id="thBtn" href="#" target="_blank" rel="noopener">Threadsで投稿する</a>
+      </div>
+      <p class="note" id="copyMsg" style="min-height:1.5em;margin-bottom:0;"></p>
+    </div>
+    <button type="button" class="again" id="againBtn">選び直す</button>
+  </div>
+
+  <div class="linebox" id="lineBox" style="display:none;">
+    <h2>続きは、LINEで受け取れます</h2>
+    <p style="margin:6px 0 0;">「彼から見たあなた」の点がなぜそうなるのか。深掘りの読み解きに加えて、特典『彼の沈黙の本音と、あなたが送る一言』も、LINEでお送りします。</p>
+    <p style="margin:10px 0 0;">LINEで友だち追加をして、<span id="lineKeyword">「相性」</span>と送ってください。深掘りの読み解きと特典が届きます。</p>
+    <a class="linebtn" href="https://line.me/R/ti/p/@936usuae" target="_blank" rel="noopener">LINEで友だち追加する</a>
+    <div class="lineid">LINE @936usuae（タクスー霊視 みらい先生）</div>
+  </div>
+
+  <div class="paidbox" id="paidBox" style="display:none;">
+    <h2>もっと深く知りたい方へ</h2>
+    <p class="note">この診断は、二人の傾向を見る入口です。今のあなたの状況そのものを聞きたいときは、こちらもあります。必要なときだけ、どうぞ。</p>
+    <div class="paiditem">
+      <div class="paidname">ひとことメール鑑定（ココナラ）</div>
+      <div class="paidprice">1,000円</div>
+      <p>今の彼とのことを、みらい先生が霊視して、メールでお答えします。</p>
+      <a class="paidbtn" href="https://coconala.com/services/4532594" target="_blank" rel="noopener">ココナラで見る</a>
+    </div>
+    <div class="paiditem">
+      <div class="paidname">メンバーシップ「相談室だより」</div>
+      <div class="paidprice">月980円</div>
+      <p>みらい先生のメンバーシップです。申込先のご案内は、公開のときにここへ置きます。</p>
+    </div>
+  </div>
+
+  <footer>
+    タクスー霊視 みらい先生｜霊視歴40年<br>
+    診断は「見立て」です。相手の気持ちを断定するものではありません。
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+
+/* ===== 16タイプのデータ =====
+   nick: 二つ名 / trait: そのタイプの特徴の一言
+   軸の並びは [E/I, S/N, T/F, J/P] */
+var TYPES = {
+  ISTJ:{nick:"誠実", trait:"約束を守り、静かに支える"},
+  ISFJ:{nick:"安定", trait:"相手を気づかい、穏やかな日常を作る"},
+  INFJ:{nick:"深慮", trait:"言葉の奥にある気持ちを読む"},
+  INTJ:{nick:"先読み", trait:"先を見通し、静かに計画を立てる"},
+  ISTP:{nick:"冷静", trait:"言葉少なに、確かな行動で示す"},
+  ISFP:{nick:"素朴", trait:"飾らず、感じたままに寄り添う"},
+  INFP:{nick:"夢見", trait:"理想と優しさを大切にする"},
+  INTP:{nick:"探究", trait:"「なぜか」を考え続ける"},
+  ESTP:{nick:"刺激", trait:"行動が早く、その場を楽しむ"},
+  ESFP:{nick:"華やか", trait:"明るさで場を温める"},
+  ENFP:{nick:"情熱", trait:"好きにまっすぐで、気持ちが大きい"},
+  ENTP:{nick:"発想", trait:"新しいことを次々に思いつく"},
+  ESTJ:{nick:"しっかり", trait:"決断が早く、引っ張っていく"},
+  ESFJ:{nick:"温か", trait:"周りを気づかい、面倒を見る"},
+  ENFJ:{nick:"包容", trait:"人の気持ちに寄り添い、励ます"},
+  ENTJ:{nick:"牽引", trait:"目標に向けて力強く進む"}
+};
+var TYPE_LIST = Object.keys(TYPES);
+
+/* 気質グループ（NT/NF/SJ/SP） */
+function temperament(t){
+  if(t.charAt(1)==="N") return t.charAt(2)==="T" ? "NT" : "NF";
+  return t.charAt(3)==="J" ? "SJ" : "SP";
+}
+
+/* ===== 向き別点数のルール =====
+   dirScore(A,B) = Aから見たBへの満足度。
+   土台70点に、4つの軸ごとに「Aの求めるもの」と「Bのあり方」の
+   合い方を加減する。軸ごとの表はREADMEに全文を記載。 */
+var AXIS_TABLE = [
+  /* 軸0 E/I : [A=Eのとき B=E / B=I, A=Iのとき B=E / B=I] */
+  {E:[ 6, 2], I:[-4, 6]},
+  /* 軸1 S/N */
+  {S:[ 7,-5], N:[-3, 7]},
+  /* 軸2 T/F */
+  {T:[ 5, 3], F:[-5, 6]},
+  /* 軸3 J/P : キーは J/P だが表の添字は文字そのもの */
+  {J:[ 6,-6], P:[-2, 5]}
+];
+var AXIS_LETTERS = [["E","I"],["S","N"],["T","F"],["J","P"]];
+
+function axisPoints(aLetter, bLetter, axisIdx){
+  var row = AXIS_TABLE[axisIdx][aLetter];
+  var pair = AXIS_LETTERS[axisIdx];
+  return bLetter === pair[0] ? row[0] : row[1];
+}
+
+function clamp(n){ return Math.max(40, Math.min(98, n)); }
+
+function dirScore(a, b){
+  var s = 70;
+  for(var i=0;i<4;i++){
+    s += axisPoints(a.charAt(i), b.charAt(i), i);
+  }
+  /* 対称ボーナス（両方向に同じだけ足す） */
+  if(a === b) s += 3;                          /* 同じタイプ同士 */
+  if(temperament(a) === temperament(b)) s += 2; /* 気質グループが同じ */
+  var diff = 0;
+  for(var j=0;j<4;j++){ if(a.charAt(j) !== b.charAt(j)) diff++; }
+  if(diff === 4) s += 4;                        /* 4軸すべて正反対の引力 */
+  return clamp(Math.round(s));
+}
+
+function diagnose(a, b){
+  var ab = dirScore(a, b);
+  var ba = dirScore(b, a);
+  var total = clamp(Math.round((ab + ba) / 2));
+  return {total: total, ab: ab, ba: ba};
+}
+
+/* ===== コメント生成 ===== */
+var AXIS_NAME = ["人との距離感","世界の見え方","気持ちの伝え方","日々のペース"];
+var AXIS_TENSION = [
+  "一人の時間と一緒にいる時間の配分が、すれ違いの元になりやすい組み合わせです",
+  "話の飛び方や現実感覚の違いに、ふと戸惑う場面がある組み合わせです",
+  "言葉の受け取り方の違いで、冷たく感じたり、重く感じたりしやすい組み合わせです",
+  "予定やペースの読めなさが、不安のもとになりやすい組み合わせです"
+];
+var AXIS_GOOD = [
+  "人との距離の取り方が近く、自然体でいやすい組み合わせです",
+  "世界の見え方が近く、話が通じやすい組み合わせです",
+  "気持ちの伝え方が近く、言葉にしなくても伝わりやすい組み合わせです",
+  "日々のペースが近く、一緒の予定を立てやすい組み合わせです"
+];
+
+function axisContrib(a, b){
+  /* 各軸の寄与（A→BとB→Aの平均） */
+  var out = [];
+  for(var i=0;i<4;i++){
+    out.push((axisPoints(a.charAt(i), b.charAt(i), i) + axisPoints(b.charAt(i), a.charAt(i), i)) / 2);
+  }
+  return out;
+}
+
+function buildComment(a, b, res){
+  var ta = TYPES[a], tb = TYPES[b];
+  var diff = 0;
+  for(var i=0;i<4;i++){ if(a.charAt(i) !== b.charAt(i)) diff++; }
+  var pattern;
+  if(diff === 0) pattern = "似た者同士だからこそ、分かり合える速さがある二人";
+  else if(diff === 1) pattern = "よく似ていて、少しだけ違う。その少しの違いが、新鮮さになる二人";
+  else if(diff === 2) pattern = "似ているところと違うところが半分ずつ。補い合える余地の大きい二人";
+  else if(diff === 3) pattern = "正反対に近い二人。違うからこそ、惹かれ合う力が働く二人";
+  else pattern = "正反対だからこそ、自分の世界にないものを持ち寄れる二人";
+
+  var gap = res.ab - res.ba;
+  var asym;
+  if(gap >= 12) asym = "片方の満足度がもう片方より高くなりやすい二人です";
+  else if(gap <= -12) asym = "片方の満足度がもう片方より高くなりやすい二人です";
+  else if(Math.abs(gap) >= 6) asym = "満足度には少し向きの差が出やすい二人です";
+  else asym = "満足度が釣り合いやすい二人です";
+
+  return ta.nick + "の" + a + "と、" + tb.nick + "の" + b + "。" + pattern + "で、" + asym + "。";
+}
+
+function buildReading(a, b, res){
+  var ta = TYPES[a], tb = TYPES[b];
+  var contrib = axisContrib(a, b);
+  var worst = 0, best = 0;
+  for(var i=1;i<4;i++){
+    if(contrib[i] < contrib[worst]) worst = i;
+    if(contrib[i] > contrib[best]) best = i;
+  }
+  var lines = [];
+  lines.push("あなたは" + ta.nick + "の" + a + "（" + ta.trait + "タイプ）。彼は" + tb.nick + "の" + b + "（" + tb.trait + "タイプ）です。");
+  lines.push("二人の強みは、" + AXIS_NAME[best] + "の近さ。" + AXIS_GOOD[best] + "。");
+  if(contrib[worst] < 0){
+    lines.push("一方で、気をつけたいのは" + AXIS_NAME[worst] + "。" + AXIS_TENSION[worst] + "。ここは、相手が悪いわけではなく、タイプの違いが出る場所です。");
+  } else {
+    lines.push("大きな衝突の種は少ない組み合わせです。そのぶん、慣れから来る「言わなくても分かるはず」という思い込みに気をつけてください。");
+  }
+  if(res.ab - res.ba >= 6){
+    lines.push("点数の向きを見ると、あなたから見た彼のほうが高く出ています。あなたが彼に惹かれているぶん、彼の反応の薄さが気になりやすい配置です。");
+  } else if(res.ba - res.ab >= 6){
+    lines.push("点数の向きを見ると、彼から見たあなたのほうが高く出ています。彼の気持ちは、言葉や態度に出ている以上に大きい可能性があります。");
+  } else {
+    lines.push("点数の向きに大きな差はありません。二人の気持ちの大きさは、近いところにある配置です。");
+  }
+  return lines;
+}
+
+/* ===== シェア文案の生成（X・Threads用） ===== */
+function buildShareText(a, b, res){
+  var text =
+    "【恋愛相性診断】" + TYPES[a].nick + "の" + a + " × " + TYPES[b].nick + "の" + b + "\n" +
+    "総合" + res.total + "点（あなたから見た彼 " + res.ab + "点／彼から見たあなた " + res.ba + "点）\n" +
+    buildComment(a, b, res) + "\n" +
+    "#恋愛相性診断";
+  return text;
+}
+
+/* ===== 画面の動作 ===== */
+var selected = {self: null, partner: null};
+
+function buildGrid(gridId, key){
+  var grid = document.getElementById(gridId);
+  TYPE_LIST.forEach(function(t){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tbtn";
+    btn.setAttribute("data-type", t);
+    btn.innerHTML = '<span class="code">' + t + '</span><span class="nick">' + TYPES[t].nick + "</span>";
+    btn.addEventListener("click", function(){
+      selectType(key, t);
+    });
+    grid.appendChild(btn);
+  });
+}
+
+function selectType(key, t){
+  selected[key] = t;
+  var gridId = key === "self" ? "selfGrid" : "partnerGrid";
+  var grid = document.getElementById(gridId);
+  var btns = grid.querySelectorAll(".tbtn");
+  for(var i=0;i<btns.length;i++){
+    btns[i].classList.toggle("sel", btns[i].getAttribute("data-type") === t);
+  }
+  document.getElementById("goBtn").disabled = !(selected.self && selected.partner);
+  document.getElementById("errMsg").textContent = "";
+}
+
+/* 補助質問（各軸1問） */
+var QUESTIONS = [
+  {axis:0, q:"休みの日は、どちらで元気が戻りますか。",
+   opts:[["E","人と会って、にぎやかに過ごす"],["I","一人の時間を静かに過ごす"]]},
+  {axis:1, q:"話を聞くとき、どちらのほうが落ち着きますか。",
+   opts:[["S","具体的で、実際にあったこと"],["N","たとえ話や、これからの可能性"]]},
+  {axis:2, q:"迷ったとき、最後に頼るのはどちらですか。",
+   opts:[["T","筋が通っているかどうか"],["F","気持ちが納得するかどうか"]]},
+  {axis:3, q:"予定の立て方は、どちらが近いですか。",
+   opts:[["J","先に決めておくと安心する"],["P","その場で決めるほうが楽しい"]]}
+];
+var QUESTIONS_PARTNER = [
+  {axis:0, q:"彼は、休みの日にどちらで元気が戻りそうですか。",
+   opts:[["E","人と会って、にぎやかに過ごす"],["I","一人の時間を静かに過ごす"]]},
+  {axis:1, q:"彼の話は、どちらが多いですか。",
+   opts:[["S","具体的で、実際にあったこと"],["N","たとえ話や、これからの可能性"]]},
+  {axis:2, q:"彼が迷ったとき、最後に頼りそうなのはどちらですか。",
+   opts:[["T","筋が通っているかどうか"],["F","気持ちが納得するかどうか"]]},
+  {axis:3, q:"彼の予定の立て方は、どちらが近いですか。",
+   opts:[["J","先に決めておくと安心する"],["P","その場で決めるほうが楽そう"]]}
+];
+
+function buildHelper(helperId, key, questions){
+  var box = document.getElementById(helperId);
+  var answers = [null, null, null, null];
+  questions.forEach(function(item, qi){
+    var div = document.createElement("div");
+    div.className = "q";
+    var p = document.createElement("p");
+    p.textContent = "Q" + (qi + 1) + "．" + item.q;
+    div.appendChild(p);
+    var opts = document.createElement("div");
+    opts.className = "opts";
+    item.opts.forEach(function(o){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "obtn";
+      b.textContent = o[1];
+      b.addEventListener("click", function(){
+        answers[item.axis] = o[0];
+        var sib = opts.querySelectorAll(".obtn");
+        for(var i=0;i<sib.length;i++) sib[i].classList.remove("sel");
+        b.classList.add("sel");
+        if(answers.every(function(x){ return x !== null; })){
+          selectType(key, answers.join(""));
+        }
+      });
+      opts.appendChild(b);
+    });
+    div.appendChild(opts);
+    box.appendChild(div);
+  });
+  var done = document.createElement("p");
+  done.className = "note";
+  done.textContent = "4つ答えると、そのタイプが自動で選ばれます。";
+  box.appendChild(done);
+}
+
+document.querySelectorAll(".helper-toggle").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    var box = document.getElementById(btn.getAttribute("data-helper"));
+    box.classList.toggle("open");
+  });
+});
+
+buildGrid("selfGrid", "self");
+buildGrid("partnerGrid", "partner");
+buildHelper("selfHelper", "self", QUESTIONS);
+buildHelper("partnerHelper", "partner", QUESTIONS_PARTNER);
+
+document.getElementById("goBtn").addEventListener("click", function(){
+  if(!selected.self || !selected.partner){
+    document.getElementById("errMsg").textContent = "あなたと彼、両方のタイプを選んでください。";
+    return;
+  }
+  var a = selected.self, b = selected.partner;
+  var res = diagnose(a, b);
+  document.getElementById("totalScore").textContent = res.total;
+  document.getElementById("dirAB").textContent = res.ab;
+  document.getElementById("dirBA").textContent = res.ba;
+  document.getElementById("dirABLabel").textContent = "あなた（" + a + "）から見た彼（" + b + "）";
+  document.getElementById("dirBALabel").textContent = "彼（" + b + "）から見たあなた（" + a + "）";
+  document.getElementById("oneComment").textContent = buildComment(a, b, res);
+  var reading = document.getElementById("reading");
+  reading.innerHTML = "";
+  buildReading(a, b, res).forEach(function(line){
+    var p = document.createElement("p");
+    p.textContent = line;
+    reading.appendChild(p);
+  });
+  var shareText = buildShareText(a, b, res);
+  document.getElementById("shareText").textContent = shareText;
+  document.getElementById("copyMsg").textContent = "";
+  var enc = encodeURIComponent(shareText);
+  document.getElementById("xBtn").href = "https://twitter.com/intent/tweet?text=" + enc;
+  document.getElementById("thBtn").href = "https://www.threads.net/intent/post?text=" + enc;
+  var result = document.getElementById("result");
+  result.style.display = "block";
+  document.getElementById("lineBox").style.display = "block";
+  document.getElementById("paidBox").style.display = "block";
+  result.scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+document.getElementById("copyBtn").addEventListener("click", function(){
+  var text = document.getElementById("shareText").textContent;
+  var msg = document.getElementById("copyMsg");
+  function done(){ msg.textContent = "コピーしました。XやThreadsに貼って使ってください。"; }
+  function fallback(){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); done(); }
+    catch(e){ msg.textContent = "コピーできませんでした。文案を長押ししてコピーしてください。"; }
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, fallback);
+  } else {
+    fallback();
+  }
+});
+
+document.getElementById("againBtn").addEventListener("click", function(){
+  document.getElementById("result").style.display = "none";
+  document.getElementById("lineBox").style.display = "none";
+  document.getElementById("paidBox").style.display = "none";
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+</script>
+</body>
+</html>
