@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>追いかけタイプ診断｜タクスー霊視 みらい先生</title>
+<meta name="description" content="返事を待つ時間がつらいとき、あなたがしてしまう言動のクセを眺める診断です。知らないうちに彼を追い詰める言動ではなく、あなたの心の働きを見立てる診断です。">
+<style>
+  :root{
+    --bg:#fdf7f4;
+    --card:#ffffff;
+    --ink:#3a3230;
+    --sub:#8a7a74;
+    --accent:#d6336c;
+    --accent-soft:#fdeef2;
+    --line:#f3d9de;
+    --gold:#b98a2f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,"Noto Sans JP",sans-serif;
+    font-size:17px;
+    line-height:1.8;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:24px 16px 56px;}
+  header.top{text-align:center;padding:24px 0 8px;}
+  .brand{color:var(--gold);letter-spacing:.35em;font-size:13px;}
+  h1{font-size:27px;margin:10px 0 6px;font-weight:600;letter-spacing:.06em;}
+  .lead{color:var(--sub);font-size:15px;margin:0 auto;max-width:32em;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:22px 18px;
+    margin:20px 0;
+    box-shadow:0 2px 10px rgba(214,51,108,.05);
+  }
+  h2{font-size:19px;margin:0 0 6px;font-weight:600;}
+  .note{color:var(--sub);font-size:14px;margin:4px 0 12px;}
+  /* 質問 */
+  .q{margin:0 0 18px;}
+  .q:last-child{margin-bottom:4px;}
+  .q p{margin:0 0 6px;font-size:15px;}
+  .q .qnum{color:var(--accent);font-weight:600;}
+  .opts{display:flex;gap:8px;flex-wrap:wrap;}
+  .obtn{
+    flex:1;min-width:140px;appearance:none;border:1px solid var(--line);background:#fff;
+    border-radius:12px;padding:10px;cursor:pointer;font-size:14px;color:var(--ink);font-family:inherit;
+    text-align:left;line-height:1.5;
+  }
+  .obtn.sel{border-color:var(--accent);background:var(--accent-soft);}
+  .go{
+    display:block;width:100%;margin:22px 0 0;padding:16px;border:none;border-radius:999px;
+    background:var(--accent);color:#fff;font-size:18px;cursor:pointer;font-family:inherit;letter-spacing:.08em;
+  }
+  .go:disabled{background:#e5c9d1;cursor:default;}
+  .err{color:var(--accent);font-size:14px;text-align:center;min-height:1.5em;margin:8px 0 0;}
+  /* 結果 */
+  .result{display:none;}
+  .type-head{text-align:center;}
+  .type-label{color:var(--sub);font-size:14px;letter-spacing:.2em;}
+  .type-name{font-size:30px;line-height:1.4;color:var(--accent);font-weight:600;margin:6px 0 2px;}
+  .type-sub{color:var(--sub);font-size:14px;}
+  .sec{margin-top:18px;}
+  .sec h3{
+    font-size:16px;margin:0 0 4px;font-weight:600;color:var(--ink);
+    border-left:4px solid var(--accent);padding-left:10px;
+  }
+  .sec p{margin:0;}
+  .locked{
+    margin-top:18px;background:#faf5f2;border:1px dashed var(--line);border-radius:14px;padding:14px 16px;
+  }
+  .locked .ltitle{font-size:14px;color:var(--sub);margin:0 0 6px;}
+  .locked ul{margin:0;padding-left:1.2em;color:var(--sub);font-size:15px;}
+  .meyasu{font-size:13px;color:var(--sub);border-top:1px dashed var(--line);padding-top:10px;margin-top:18px;}
+  .again{display:block;margin:18px auto 0;background:none;border:none;color:var(--sub);
+    text-decoration:underline;cursor:pointer;font-size:15px;font-family:inherit;}
+  /* シェア */
+  .sharebox{
+    background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 18px;margin:20px 0;text-align:center;
+  }
+  .sharebox h2{font-size:17px;}
+  .sharebtns{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
+  .sharebtn{
+    display:inline-block;text-decoration:none;padding:12px 26px;border-radius:999px;font-size:15px;color:#fff;letter-spacing:.05em;
+  }
+  .sharebtn.x{background:#000;}
+  .sharebtn.threads{background:#333;}
+  /* LINE */
+  .linebox{
+    background:#f2fbf3;border:1px solid #cfe8cf;border-radius:18px;padding:22px 18px;margin:20px 0;text-align:center;
+  }
+  .linebox h2{color:#2e7d32;}
+  .linebtn{
+    display:inline-block;margin-top:10px;background:#06c755;color:#fff;text-decoration:none;
+    padding:14px 34px;border-radius:999px;font-size:17px;letter-spacing:.05em;
+  }
+  .lineid{color:var(--sub);font-size:14px;margin-top:10px;}
+  /* 有料の次の一歩（置き場） */
+  .paidbox{
+    background:#fffdf6;border:1px solid #eadfc2;border-radius:18px;padding:22px 18px;margin:20px 0;
+  }
+  .paidbox h2{font-size:17px;color:var(--gold);}
+  .paiditem{margin-top:12px;}
+  .paiditem .pname{font-weight:600;}
+  .paiditem .pdesc{color:var(--sub);font-size:14px;margin:2px 0 0;}
+  .paidbtn{
+    display:inline-block;margin-top:6px;color:var(--gold);border:1px solid var(--gold);background:#fff;
+    text-decoration:none;padding:8px 22px;border-radius:999px;font-size:14px;
+  }
+  footer{text-align:center;color:var(--sub);font-size:13px;margin-top:28px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">― 診 断 ―</div>
+    <h1>追いかけタイプ診断</h1>
+    <p class="lead">返事を待つ時間がつらいとき、ついしてしまう言動には、あなたのクセが出ます。<br>
+    これは、あなたを責めるための診断ではありません。あなたの心の働きを、そっと眺めるための診断です。</p>
+  </header>
+
+  <div class="card">
+    <p style="margin:0;">この診断は<strong>無料</strong>です。<strong>登録なしで、結果の入口まで見られます</strong>。</p>
+    <p class="note" style="margin-bottom:0;">選んだ内容がどこかへ送信されることはありません。結果は、あなたの言動の傾向を眺めるための「見立て」です。「追いかけてしまう自分」を責めるためではなく、整えるために使ってください。</p>
+  </div>
+
+  <div class="card">
+    <h2>あなたの追いかけタイプ</h2>
+    <p class="note">返事を待つあいだの自分の様子に、いちばん近いものを選んでください。全8問です。</p>
+    <div id="questions"></div>
+    <button type="button" class="go" id="go" disabled>私の追いかけタイプを見る</button>
+    <p class="err" id="err"></p>
+  </div>
+
+  <div class="card result" id="result">
+    <div class="type-head">
+      <div class="type-label">あ な た の 追 い か け タ イ プ</div>
+      <div class="type-name" id="typeName"></div>
+      <div class="type-sub" id="typeSub"></div>
+    </div>
+    <div class="sec">
+      <h3>あなたの心の働き（見立て）</h3>
+      <p id="spec"></p>
+    </div>
+    <div class="sec">
+      <h3>まず試せる一歩</h3>
+      <p id="step"></p>
+    </div>
+    <div class="locked">
+      <p class="ltitle">この先は、LINEでお届けします</p>
+      <ul>
+        <li>なぜ、あなたはそうしてしまうのか（心の働きの読み解き）</li>
+        <li>追いかけたくなった夜の、気持ちの整え方</li>
+        <li>タイプ別の、深い読み解き</li>
+        <li>特典『彼の沈黙タイプ別 声のかけ方カード』</li>
+      </ul>
+    </div>
+    <p class="meyasu">この結果は、答え方から見立てた言動の傾向です。あなたが彼を追い詰めている、と決めつけるものではありませんし、彼の気持ちを断定するものでもありません。眺める材料にしてください。</p>
+    <button type="button" class="again" id="again">答え直す</button>
+  </div>
+
+  <div class="sharebox" id="share" style="display:none;">
+    <h2>結果を、シェアできます</h2>
+    <p class="note" style="margin-bottom:0;">タイプ名と一言を入れた文案を用意しました。そのまま投稿できます。</p>
+    <div class="sharebtns">
+      <a class="sharebtn x" id="shareX" href="#" target="_blank" rel="noopener">Xでシェア</a>
+      <a class="sharebtn threads" id="shareThreads" href="#" target="_blank" rel="noopener">Threadsでシェア</a>
+    </div>
+  </div>
+
+  <div class="linebox" id="line" style="display:none;">
+    <h2>続きは、LINEで受け取れます</h2>
+    <p style="margin:6px 0 0;">あなたのタイプの<strong>深掘り読み解きと特典</strong>を、LINEでお送りします。</p>
+    <p style="margin:10px 0 0;">LINEで友だち追加をして、<span id="lineKeyword">「追いかけ○」</span>と送ってください。</p>
+    <p class="note">登録の流れの中で、メールアドレスの登録も一緒に済ませられます。深掘りと特典は、メールでもお受け取りいただけます。</p>
+    <a class="linebtn" href="https://line.me/R/ti/p/@936usuae" target="_blank" rel="noopener">LINEで友だち追加する</a>
+    <div class="lineid">LINE @936usuae（タクスー霊視 みらい先生）</div>
+  </div>
+
+  <div class="paidbox" id="paid" style="display:none;">
+    <h2>もっと深く知りたい方へ</h2>
+    <p class="note" style="margin-bottom:0;">診断は見立てです。あなたの状況に合わせて、もっと詳しく知りたい方には、こちらもあります。急がなくて大丈夫です。</p>
+    <div class="paiditem">
+      <div class="pname">ひとことメール鑑定（ココナラ）</div>
+      <p class="pdesc">彼のことで気になることを一つ、メールでお答えします。1,000円。</p>
+      <a class="paidbtn" href="https://coconala.com/services/4532594" target="_blank" rel="noopener">ココナラで見る</a>
+    </div>
+    <div class="paiditem">
+      <div class="pname">相談室だより（メンバーシップ）</div>
+      <p class="pdesc">同じ悩みを持つ方々とゆるくつながる、月980円の便りです。</p>
+      <a class="paidbtn" href="https://note.com/miraisensei/membership" target="_blank" rel="noopener">noteで見る</a>
+    </div>
+  </div>
+
+  <footer>
+    タクスー霊視 みらい先生｜霊視歴40年<br>
+    診断は「見立て」です。相手の気持ちを断定するものではありません。
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+
+/* 質問：opts は [加点先タイプ, 選択肢文] の組 */
+var QUESTIONS = [
+  { q:"彼からの返事が半日ほど来ないとき、あなたが一番しやすいことは？", opts:[
+    [1,"「何かあったのかな」と心配になり、短い確認の連絡を送る"],
+    [3,"彼のSNSやオンラインの様子を、つい何度も見てしまう"],
+    [2,"さっき送った文面に付け足したいことが浮かび、もう一通考え始める"],
+    [4,"何もしない。でも、胸のあたりがずっとざわついている"]
+  ]},
+  { q:"送ったあとの自分の文面を、見返すことはありますか？", opts:[
+    [2,"ある。「伝わり方が違ったかも」と、直したくなる"],
+    [1,"ある。「忙しいときに送ってしまったかな」と気になる"],
+    [4,"ある。我慢していた分、強く言いすぎていないか不安になる"],
+    [3,"ある。彼が見たかどうか（既読）を確かめたくて開く"]
+  ]},
+  { q:"追いLINEを送りたくなるのは、どんなときですか？", opts:[
+    [4,"何日も我慢したあと、「もう限界」と感じたとき"],
+    [2,"自分の気持ちが、まだ伝えきれていない気がするとき"],
+    [1,"彼の身に何かあったのでは、と心配が膨らんだとき"],
+    [3,"彼がSNSでは動いているのに、自分には返事がないと知ったとき"]
+  ]},
+  { q:"返事を待つあいだ、彼の様子を確かめる方法は？", opts:[
+    [3,"SNSの投稿やストーリー、オンライン表示をそっと見る"],
+    [1,"共通の知人に、それとなく様子を聞くことがある"],
+    [2,"過去のやり取りを読み返して、彼の言葉の意味を考える"],
+    [4,"何もしない代わりに、頭の中で何度も考え続ける"]
+  ]},
+  { q:"気持ちが溢れてしまう場面に近いのは？", opts:[
+    [4,"静かに待っていたのに、ふとした一言や出来事で涙と一緒に溢れる"],
+    [1,"彼の体調や仕事の心配が重なったとき"],
+    [3,"他の人には楽しそうにしている様子を見たとき"],
+    [2,"自分の言葉が軽く受け流されたように感じたとき"]
+  ]},
+  { q:"やっと返事が来たとき、あなたがしやすいことは？", opts:[
+    [2,"ほっとして、待っていた間の気持ちまで一気に伝えたくなる"],
+    [4,"嬉しいのに、溜まっていた気持ちが出て、少し責める言い方になる"],
+    [1,"まず彼の体調や様子を気づかう言葉を返す"],
+    [3,"すぐに返さず、彼の文面の温度を何度も読み直す"]
+  ]},
+  { q:"友達に彼のことを話すとき、どんな話し方になりますか？", opts:[
+    [1,"「心配で」と前置きしながら、彼の事情を代弁することが多い"],
+    [2,"経緯を最初から順に、詳しく説明したくなる"],
+    [3,"彼のSNSの動きなど、観察したことを材料に話す"],
+    [4,"「平気」と言いながら、最後に本音がぽろっと出る"]
+  ]},
+  { q:"「重いと思われたくない」という気持ちは、あなたの中でどう働きますか？", opts:[
+    [4,"働くから普段は堪える。その分、反動が大きくなる"],
+    [3,"働くから直接は聞けない。代わりに様子を探ってしまう"],
+    [1,"働くけれど、心配が勝つと止まれなくなる"],
+    [2,"働くからこそ、言葉を選んで丁寧に伝えようとして長くなる"]
+  ]}
+];
+
+var TYPES = {
+  1:{ no:1, name:"心配が先に立つタイプ",
+    spec:"あなたが連絡を重ねてしまうのは、彼を責めたいからではなく、心配が先に立つから、という見立てです。返事がない時間は、「何かあったのでは」という想像を大きくします。あなたの優しさそのものが、連絡の回数を増やしてしまうのです。",
+    step:"心配で送りたくなったら、文面の最初に「返事はいらないよ」と置ける形に変えてみてください。心配を伝えることと、返事を求めることは、分けることができます。",
+    share:"心配が先に立つから、連絡が増えてしまう" },
+  2:{ no:2, name:"言葉を重ねるタイプ",
+    spec:"あなたは、自分の気持ちが「ちゃんと伝わっていない」気がすると、言葉を重ねてしまう、という見立てです。文面を考え直し、付け足し、もう一通。それは彼を追い詰めたいのではなく、分かってほしい気持ちの真剣さです。",
+    step:"付け足したくなったら、送る前に一晩だけ下書きに置いてみてください。翌朝読み返すと、「最初の一通で足りていた」と感じることがよくあります。",
+    share:"伝えきれていない気がして、言葉を重ねてしまう" },
+  3:{ no:3, name:"様子をうかがうタイプ",
+    spec:"あなたは、直接聞くことができない分、彼のSNSやオンラインの様子から気持ちを読み取ろうとする、という見立てです。連絡そのものは控えていても、心の中では彼を探し続けて、一日が疲れてしまいます。",
+    step:"様子を見たくなったら、「見たところで、彼の気持ちは分からない」と一度、言葉にしてみてください。分かるのは「動いている」という事実だけ、と線を引くことが、あなたを守ります。",
+    share:"直接聞けずに、様子をうかがって疲れてしまう" },
+  4:{ no:4, name:"我慢のあとに溢れるタイプ",
+    spec:"あなたは普段、「重いと思われたくない」と強く堪える人、という見立てです。その分、我慢が限界に近づくと、溜まった気持ちが一度に溢れてしまいます。普段の静けさと、溢れたときの強さの差に、彼も、あなた自身も驚いてしまうのです。",
+    step:"溢れる前に、小さく出す練習をしてみてください。「今日は少し寂しかった」くらいの一言を、溜まる前に送ること。それが一番、溢れ方を穏やかにします。",
+    share:"普段は堪えるのに、溜まると一度に溢れてしまう" }
+};
+
+function judge(answers){
+  var score = {1:0, 2:0, 3:0, 4:0};
+  answers.forEach(function(t){ if(t) score[t]++; });
+  var max = Math.max(score[1], score[2], score[3], score[4]);
+  var tied = [1,2,3,4].filter(function(t){ return score[t] === max; });
+  if(tied.length === 1) return TYPES[tied[0]];
+  var priority = [answers[1], answers[2]];
+  for(var i=0;i<priority.length;i++){
+    if(tied.indexOf(priority[i]) >= 0) return TYPES[priority[i]];
+  }
+  return TYPES[tied[0]];
+}
+
+function buildQuestions(boxId, questions, answers, onChange){
+  var box = document.getElementById(boxId);
+  questions.forEach(function(item, qi){
+    var div = document.createElement("div");
+    div.className = "q";
+    var p = document.createElement("p");
+    p.innerHTML = '<span class="qnum">Q' + (qi + 1) + "．</span>";
+    p.appendChild(document.createTextNode(item.q));
+    div.appendChild(p);
+    var opts = document.createElement("div");
+    opts.className = "opts";
+    item.opts.forEach(function(o){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "obtn";
+      b.textContent = o[1];
+      b.addEventListener("click", function(){
+        answers[qi] = o[0];
+        var sib = opts.querySelectorAll(".obtn");
+        for(var i=0;i<sib.length;i++) sib[i].classList.remove("sel");
+        b.classList.add("sel");
+        onChange();
+      });
+      opts.appendChild(b);
+    });
+    div.appendChild(opts);
+    box.appendChild(div);
+  });
+}
+
+function setShare(text){
+  var enc = encodeURIComponent(text);
+  document.getElementById("shareX").href = "https://twitter.com/intent/tweet?text=" + enc;
+  document.getElementById("shareThreads").href = "https://www.threads.net/intent/post?text=" + enc;
+}
+
+var answers = [null,null,null,null,null,null,null,null];
+buildQuestions("questions", QUESTIONS, answers, function(){
+  document.getElementById("go").disabled = !answers.every(function(x){ return x !== null; });
+  document.getElementById("err").textContent = "";
+});
+document.getElementById("go").addEventListener("click", function(){
+  if(!answers.every(function(x){ return x !== null; })){
+    document.getElementById("err").textContent = "全8問に答えてください。";
+    return;
+  }
+  var t = judge(answers);
+  document.getElementById("typeName").textContent = t.name;
+  document.getElementById("typeSub").textContent = "追いかけタイプ " + t.no + " ／ 全4タイプ";
+  document.getElementById("spec").textContent = t.spec;
+  document.getElementById("step").textContent = t.step;
+  document.getElementById("lineKeyword").textContent = "「追いかけ" + t.no + "」";
+  setShare("追いかけタイプ診断、私の結果は『" + t.name + "』でした。" + t.share + "タイプでした。 #追いかけタイプ診断");
+  var result = document.getElementById("result");
+  result.style.display = "block";
+  document.getElementById("share").style.display = "block";
+  document.getElementById("line").style.display = "block";
+  document.getElementById("paid").style.display = "block";
+  result.scrollIntoView({behavior:"smooth", block:"start"});
+});
+document.getElementById("again").addEventListener("click", function(){
+  document.getElementById("result").style.display = "none";
+  document.getElementById("share").style.display = "none";
+  document.getElementById("line").style.display = "none";
+  document.getElementById("paid").style.display = "none";
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+</script>
+</body>
+</html>
