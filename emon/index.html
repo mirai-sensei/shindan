@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ため息タイプ診断｜脳活呼吸メソッド</title>
+<meta property="og:title" content="ため息タイプ診断｜脳活呼吸メソッド">
+<meta property="og:description" content="最近、ため息が増えていませんか。7つの質問で、あなたのため息タイプ（朝の重さ／夜の反省会／人疲れ／将来不安）と、合った呼吸法が分かります。無料です。">
+<meta property="og:type" content="website">
+<!--
+ため息タイプ診断 実装メモ（2026-11-11）
+
+■ 判定ロジック（設計書「診断設計_ため息タイプ診断.md」どおり）
+7問の回答をタイプ別に数え、最多数のタイプを結果とする。
+同点（最多数が複数タイプ）の場合は、質問1の回答を「無条件に」優先する。
+（試作版にあった「最大が2以下のときだけQ1優先」という条件は廃止した）
+
+■ 計測の仕組み（ページ内で完結。外部送信はこのHTMLからは行わない）
+イベントは window.dataLayer に積むだけの形にしてある。
+公開時に Google タグマネージャー（GTM）等を読み込めば、
+dataLayer のイベントをそのまま GA4 等へ送れる。
+発火するイベント：
+- tameiki_start ：診断開始（パラメータ src）
+- tameiki_complete ：診断完了（パラメータ result_type, src）
+- tameiki_line_click ：結果画面でLINEボタンを押した（result_type, src）
+- tameiki_note_click ：結果画面で関連noteリンクを押した（result_type, src）
+開始数＝tameiki_start の件数、完了数・タイプ別人数＝tameiki_complete、
+登録クリック＝tameiki_line_click で数える。
+
+■ 流入元 src の引き継ぎ
+ページのURLパラメータ?src=xxx（例：src=x_profile / src=x_type5 / src=note）を
+読み取り時に取得し、sessionStorage に保持して全イベントに付けている。
+LINEの短縮リンク（lin.ee）はパラメータを付けると壊れる恐れがあるため、
+リンク先URL自体は変更せず、クリックイベント側で src とタイプを引き継ぐ形にした。
+将来メール登録を実装する場合は、フォームの hidden 項目に src の値を入れて
+登録レコードに残し、送信完了時に tameiki_mail_register を発火させること。
+
+■ メール登録について
+送信先は自前の受け皿（receiver/）に確定（2026-11-11）。フォームから POST /api/register へ送り、
+src と result_type を登録レコードに残す。
+この接続済み版では送信先URLを https://emon-receiver.onrender.com プレースホルダにしており、
+デプロイ後に受け皿の実URLへ一括置換してから公開する。
+
+■ 結果画面の「ちょい見せ」化（2026-11-23、項目3）
+結果画面ではタイプ名と基本傾向（body 1行）と、おすすめの呼吸法の「名前」だけを見せ、
+タイプ別の呼吸のやり方（手順・タイミング・コツ＝RESULTS の breath 本文）は画面に出さず、
+LINEキーワード「呼吸A」〜「呼吸D」で受け取る形に統一した（みらい先生の診断と同じ型）。
+判定ロジック・質問・計測イベントは変更していない。breath 本文は、LINEキーワード応答の
+返信文の原稿として、このファイル内に残してある。
+-->
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0;}
+body { font-family: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif; background: linear-gradient(180deg, #fdf8f0 0%, #f3ece1 100%); color: #3d3630; min-height: 100vh;}
+.wrap { max-width: 640px; margin: 0 auto; padding: 24px 16px 48px;}
+.card { background: #fffdf9; border-radius: 20px; padding: 32px 24px; box-shadow: 0 4px 24px rgba(120, 90, 40, 0.10);}
+h1 { font-size: 28px; line-height: 1.5; color: #5a4632; text-align: center; margin-bottom: 12px;}
+.sub { text-align: center; font-size: 16px; line-height: 1.8; color: #7a6a58; margin-bottom: 24px;}
+.badge { display: inline-block; background: #f0e4cf; color: #8a6b45; border-radius: 999px; padding: 4px 14px; font-size: 13px; margin-bottom: 16px;}
+.center { text-align: center;}
+.btn { display: block; width: 100%; border: none; cursor: pointer; border-radius: 999px; padding: 16px 20px; font-size: 18px; font-weight: bold; transition: transform.15s, box-shadow.15s; font-family: inherit;}
+.btn-main { background: linear-gradient(90deg, #d9903f, #c4742a); color: #fff; box-shadow: 0 4px 14px rgba(196,116,42,.35);}
+.btn-main:hover { transform: translateY(-2px);}
+.btn-line { background: #06c755; color: #fff; box-shadow: 0 4px 14px rgba(6,199,85,.3); text-decoration: none; text-align: center; margin-top: 12px;}
+.btn-ghost { background: #f3ece1; color: #7a6a58; margin-top: 12px;}
+.progress { height: 8px; background: #efe6d6; border-radius: 999px; overflow: hidden; margin-bottom: 8px;}
+.progress > div { height: 100%; background: #d9903f; border-radius: 999px; transition: width.3s;}
+.qcount { font-size: 13px; color: #a08b6f; text-align: right; margin-bottom: 16px;}
+.qtext { font-size: 20px; line-height: 1.6; font-weight: bold; color: #5a4632; margin-bottom: 20px;}
+.choice { display: block; width: 100%; text-align: left; background: #fdf6ea; border: 2px solid #eadfc8; border-radius: 14px; padding: 16px 18px; font-size: 16px; line-height: 1.6; color: #4a3f34; cursor: pointer; margin-bottom: 12px; transition: border-color.15s, background.15s; font-family: inherit;}
+.choice:hover { border-color: #d9903f; background: #fdf1dc;}
+.rtype { font-size: 26px; font-weight: bold; color: #c4742a; text-align: center; margin: 8px 0 8px;}
+.disclaimer { font-size: 13px; line-height: 1.7; color: #97836a; text-align: center; margin-bottom: 20px;}
+.rbody { font-size: 16px; line-height: 1.9; margin-bottom: 16px;}
+.breath { background: #fdf6ea; border-radius: 14px; padding: 16px 18px; font-size: 16px; line-height: 1.8; margin-bottom: 20px;}
+.breath.bname { font-weight: bold; color: #5a4632;}
+.related { font-size: 15px; line-height: 1.8; margin-bottom: 20px;}
+.related a { color: #c4742a;}
+.prep { background: #f7f1e5; border: 2px dashed #e0d0ae; border-radius: 14px; padding: 16px 18px; font-size: 14px; line-height: 1.8; color: #7a6a58; margin-top: 20px;}
+.prep.ptitle { font-weight: bold; color: #5a4632; margin-bottom: 4px;}
+.note { font-size: 13px; line-height: 1.7; color: #97836a; margin-top: 16px;}
+.ladder { background: #fdf6ea; border: 2px solid #eadfc8; border-radius: 14px; padding: 18px; margin-bottom: 20px;}
+.ladder .ltitle { font-size: 17px; font-weight: bold; color: #5a4632; margin-bottom: 12px;}
+.ladder .step { font-size: 15px; line-height: 1.8; margin-bottom: 14px;}
+.ladder .step:last-child { margin-bottom: 0;}
+.ladder .sname { font-weight: bold; color: #c4742a;}
+.ladder a { color: #c4742a; font-weight: bold;}
+.sharebox { background: #fdf6ea; border: 2px solid #eadfc8; border-radius: 14px; padding: 18px; margin-bottom: 20px; text-align: center;}
+.sharetitle { font-size: 15px; letter-spacing: 0.12em; color: #8a6b45; margin-bottom: 10px; font-weight: bold;}
+.sharecanvas { width: 100%; height: auto; border-radius: 10px; display: block; margin-bottom: 14px;}
+.btn-sharex { background: #14171a; color: #fff; box-shadow: 0 4px 14px rgba(20,23,26,.3); margin-top: 12px;}
+.hidden { display: none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- スタート画面 -->
+<div id="screen-start" class="card">
+<div class="center"><span class="badge">無料・7つの質問・約1分</span></div>
+<h1>ため息タイプ診断</h1>
+<p class="sub">最近、ため息が増えていませんか。<br>7つの質問に答えるだけで、あなたの「ため息タイプ」と、タイプに合った呼吸法の入口が分かります。</p>
+<button class="btn btn-main" onclick="startQuiz()">診断をはじめる</button>
+<p class="note">この診断は、医療的な診断ではありません。今の状態に合った呼吸法を選ぶための目安です。つらさが続く場合は、無理をせず、医療機関や身近な相談先も頼ってください。</p>
+</div>
+
+<!-- 質問画面 -->
+<div id="screen-quiz" class="card hidden">
+<div class="progress"><div id="bar" style="width:0%"></div></div>
+<div class="qcount" id="qcount"></div>
+<div class="qtext" id="qtext"></div>
+<div id="choices"></div>
+</div>
+
+<!-- 結果画面 -->
+<div id="screen-result" class="card hidden">
+<div class="center"><span class="badge">あなたのため息タイプは</span></div>
+<div class="rtype" id="rtype"></div>
+<p class="disclaimer">この結果は、医療的な診断ではありません。今のあなたの状態に合った呼吸法を選ぶための目安です。</p>
+<p class="rbody" id="rbody"></p>
+<div class="breath" id="rbreath"></div>
+<p class="related" id="rrelated"></p>
+<div class="sharebox">
+<div class="sharetitle">結果を画像で残せます</div>
+<canvas id="shareCanvas" width="1200" height="630" class="sharecanvas" aria-label="結果シェア画像"></canvas>
+<button class="btn btn-main" type="button" onclick="downloadShareImage()">結果画像を保存する</button>
+<button class="btn btn-sharex" type="button" onclick="shareOnX()">Xでシェアする</button>
+<p class="note">「結果画像を保存する」で、あなたのタイプとおすすめの呼吸法の名前入りの画像を手元に残せます。Xでシェアするときは、保存した画像を添付すると、画像つきで投稿できます。</p>
+</div>
+<div class="ladder">
+<div class="ltitle">次の一歩は、3つあります</div>
+<div class="step"><span class="sname">① 今日の1分実践（無料）</span><br>
+LINEで受け取った、あなたのタイプの呼吸のやり方を、1分だけ試してみてください。受け取りは無料です。今日の分は、それで十分です。</div>
+<div class="step"><span class="sname">② 7日間実践帖（¥2,980）</span><br>
+1分の実践が心地よかったら、次は7日間です。「7日間実践帖」は、あなたのタイプに合わせた呼吸を、朝と夜の小さな実践で1週間かけて身につける読み物です。買い切りで、自分のペースで進められます。<br>
+<a href="https://note.com/brain_laughter/n/n1b222e6c4848" target="_blank" rel="noopener" onclick="track('tameiki_note_click', { result_type: resultType })">7日間実践帖を見る（note）</a></div>
+<div class="step"><span class="sname">③ 上機嫌くらぶ（月額¥2,980）</span><br>
+一人だと続かない、という方へ。「上機嫌くらぶ」は、月1回の音声や限定記事、Q&amp;Aで、実践を一緒に続ける場所です。いつでも退会できます。<br>
+<a href="https://note.com/brain_laughter/membership" target="_blank" rel="noopener" onclick="track('tameiki_note_click', { result_type: resultType })">上機嫌くらぶを見る（noteメンバーシップ）</a></div>
+</div>
+<p class="rbody">でも、あなたのタイプに合った呼吸のやり方――手順と、やるタイミング、続けるコツ――は、ここから先です。このページでは、タイプと呼吸法の名前までをお渡ししました。</p>
+<p class="rbody">LINEで「<span id="rkeyword"></span>」と送ると、あなたのタイプの呼吸のやり方と、無料特典『ため息が、ほどける3分』（私の声のガイド音声）が届きます。</p>
+<p class="rbody">受け取り方は3つだけです。<br>
+① 下のボタンを押します<br>
+② 「追加」を押します<br>
+③ 届いた画面で「<span id="rkeyword2"></span>」と送ります</p>
+<a class="btn btn-line" id="linebtn" href="https://lin.ee/jhfj0n5" target="_blank" rel="noopener">LINEであなたのタイプの呼吸を受け取る（無料）</a>
+<p class="note">LINEで受け取る場合は、友だち追加のあと、「<span id="rkeyword3"></span>」と送ってください。あなたのタイプの呼吸のやり方と、特典『ため息が、ほどける3分』をお届けします。配信が不要になったら、いつでもブロックで止められます。</p>
+<div class="prep">
+<div class="ptitle">メールでも受け取れます（無料）</div>
+<form id="mailform">
+<label>メールアドレス<br>
+<input type="email" name="email" required placeholder="you@example.com"
+ style="width:100%;padding:12px;font-size:16px;border:1px solid #d8c9ae;border-radius:8px;box-sizing:border-box;margin-top:6px;">
+</label>
+<input type="hidden" name="src" id="mf-src">
+<input type="hidden" name="result_type" id="mf-type">
+<label style="display:block;margin-top:10px;font-size:14px;">
+<input type="checkbox" name="consent_benefit" value="1" required>
+ 特典『ため息が、ほどける3分』の送付を希望します（必須）</label>
+<label style="display:block;margin-top:6px;font-size:14px;">
+<input type="checkbox" name="consent_newsletter" value="1">
+ 呼吸法の案内メールを受け取ります（任意）</label>
+<button class="btn btn-main" type="submit" style="margin-top:14px;">メールで受け取る</button>
+<p class="note" id="mf-msg"></p>
+</form>
+</div>
+<button class="btn btn-ghost" onclick="location.reload()">もう一度診断する</button>
+<p class="note">えもん(笑門)ひろし｜笑いヨガティーチャー／脳活呼吸メソッド</p>
+</div>
+
+</div>
+
+<script>
+// ===== 流入元（src）の取得と保持 =====
+// URLパラメータ?src=xxx を読み、計測イベントと登録導線に引き継ぐ。
+const SRC = new URLSearchParams(location.search).get("src") || "direct";
+try { sessionStorage.setItem("tameiki_src", SRC);} catch (e) {}
+
+// ===== 計測（dataLayerへ積むだけ。外部送信はしない） =====
+window.dataLayer = window.dataLayer || [];
+function track(eventName, params) {
+window.dataLayer.push(Object.assign({ event: eventName, src: SRC}, params || {}));
+}
+
+const QUESTIONS = [
+{ q: "いちばん「重い」と感じるのは、どの時間帯ですか", c: [
+["A", "朝、起きたときから体と心が重い"],
+["B", "夜、布団に入ってから考え事が止まらない"],
+["C", "人と会ったあと、どっと疲れる"],
+["D", "ふとしたとき、将来のことが不安になる"]]},
+{ q: "ため息がよく出るのは、どんなときですか", c: [
+["A", "動き出す前、エンジンがかからないとき"],
+["B", "一日の終わりに、今日の自分を責めるとき"],
+["C", "家族や周りの人の顔色をうかがったあと"],
+["D", "お金や健康のニュースを見たとき"]]},
+{ q: "睡眠について、いちばん近いものは", c: [
+["A", "寝ても疲れが取れず、朝がつらい"],
+["B", "寝つきが悪く、夜中に考え事で目が覚める"],
+["C", "眠れるが、休日も人の予定に振り回される"],
+["D", "眠れるが、朝起きると漠然と不安だ"]]},
+{ q: "体の感覚で気になるものは", c: [
+["A", "肩や首が固まって、呼吸が浅い"],
+["B", "頭の中がずっとざわついている"],
+["C", "人前で無理に笑って、頬や顎が疲れる"],
+["D", "胸のあたりが、なんとなく締めつけられる"]]},
+{ q: "最近の自分について、いちばん近いものは", c: [
+["A", "やることはあるのに、始める気力が出ない"],
+["B", "「あのとき、ああ言えばよかった」と引きずる"],
+["C", "本音を言うより、場を収める役が多い"],
+["D", "「この先どうなるんだろう」が頭を離れない"]]},
+{ q: "休みの日の過ごし方で近いものは", c: [
+["A", "昼までだらだらして、夕方に後悔する"],
+["B", "休んでも、頭の中は仕事や家のことばかり"],
+["C", "誘われると断れず、予定で埋まる"],
+["D", "何も決められず、ぼんやり時間が過ぎる"]]},
+{ q: "いちばん取り戻したいものは", c: [
+["A", "朝の軽さ、すっきりした始まり"],
+["B", "夜の静けさ、穏やかな眠り"],
+["C", "人との時間のあとの、ほっとする感じ"],
+["D", "先のことを考えても、揺れない安心感"]]},
+];
+
+// 結果文面は「診断_公開版チェックと最終文面.md」第3章を正とする。
+// 関連noteのURLは X計画_えもん.md の導線表（正本）から差し込んだ。
+const RESULTS = {
+A: { keyword: "呼吸A", name: "朝の重さタイプ",
+body: "朝から体と心が重いのは、呼吸が浅くなり、体と頭のリズムが滞っているサインかもしれません。",
+breathName: "凪の呼吸",
+breath: "鼻から4秒吸って、口から8秒かけて吐く。まず10秒の実践から始めてみてください。朝の感じ方には個人差がありますが、起きる前の布団の中でできるのが、この呼吸の良いところです。",
+notes: [ ["朝の重さについて書いたnoteはこちら", "https://note.com/brain_laughter/n/n79dedd9f02cb"]]},
+B: { keyword: "呼吸B", name: "夜の反省会タイプ",
+body: "夜に反省会が始まってしまうのは、一日の緊張が抜けきらないまま、頭だけが回り続けている状態です。",
+breathName: "ハミング呼吸",
+breath: "吐く息に小さなハミングを乗せると、頭のざわつきが静まりやすくなります。眠る前の数分に試してみてください。効き方には個人差があります。",
+notes: [ ["夜の反省会について書いたnoteはこちら", "https://note.com/brain_laughter/n/nb5878eb6e86f"]]},
+C: { keyword: "呼吸C", name: "人疲れタイプ",
+body: "人の顔色をうかがって疲れるのは、周りに合わせる表情と呼吸が固まっているからかもしれません。",
+breathName: "微笑みの呼吸",
+breath: "吐く息に合わせて口元をゆるめると、固まった表情がほどけやすくなります。人と会った日の帰り道に、まず1回だけでも試してみてください。感じ方には個人差があります。",
+notes: [ ["家族にきつくなることについて書いたnoteはこちら", "https://note.com/brain_laughter/n/n65a13055a3af"],
+["人の顔色で疲れることについて書いたnoteはこちら", "https://note.com/brain_laughter/n/nee753930c565"]]},
+D: { keyword: "呼吸D", name: "将来不安タイプ",
+body: "将来の不安が離れないのは、不安そのものより、考え続ける頭を休める時間が足りていないことが多いものです。",
+breathName: "凪の呼吸＋ハミング呼吸",
+breath: "呼吸のリズムが整うと、考える頭にも区切りがつきやすくなります。不安が浮かんだときに、考える前にまず呼吸、という順番を試してみてください。感じ方には個人差があります。",
+notes: [ ["老後や将来の不安について書いたnoteはこちら", "https://note.com/brain_laughter/n/n0da34ddbe7fa"]]},
+};
+
+let current = 0;
+let started = false;
+let resultType = null;
+const answers = [];
+
+// ===== 診断結果の保存（第1段：診断タイプの保存） =====
+// 仮の識別子（visitor_id）をブラウザに残し、診断完了のたびに受け皿へ送る。
+// メール登録のときに同じ visitor_id を渡すことで、診断結果とメールが結びつく。
+function getVisitorId() {
+  try {
+    let v = localStorage.getItem("emon_visitor_id");
+    if (!v) {
+      v = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+        : "v" + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+      localStorage.setItem("emon_visitor_id", v);
+    }
+    return v;
+  } catch (e) { return ""; }
+}
+const VISITOR_ID = getVisitorId();
+function recordDiagnosis() {
+  try {
+    fetch("https://emon-receiver.onrender.com/api/diagnosis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        visitor_id: VISITOR_ID,
+        diagnosis_kind: "tameiki",
+        result_type: resultType,
+        answers: answers,
+        src: SRC,
+      }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch (e) { /* 保存に失敗しても診断の表示は続ける */ }
+}
+
+function startQuiz() {
+if (!started) { started = true; track("tameiki_start", {});}
+document.getElementById("screen-start").classList.add("hidden");
+document.getElementById("screen-quiz").classList.remove("hidden");
+showQuestion();
+}
+function showQuestion() {
+const item = QUESTIONS[current];
+document.getElementById("bar").style.width = (current / QUESTIONS.length * 100) + "%";
+document.getElementById("qcount").textContent = "質問 " + (current + 1) + " / " + QUESTIONS.length;
+document.getElementById("qtext").textContent = item.q;
+const box = document.getElementById("choices");
+box.innerHTML = "";
+item.c.forEach(([key, text]) => {
+const b = document.createElement("button");
+b.className = "choice";
+b.textContent = text;
+b.onclick = () => { answers.push(key); current++; if (current < QUESTIONS.length) { showQuestion();} else { showResult();}};
+box.appendChild(b);
+});
+}
+// 判定：最多数のタイプ。同点の場合は質問1の回答を無条件に優先する（設計書どおり）。
+function judgeType() {
+const counts = { A: 0, B: 0, C: 0, D: 0};
+answers.forEach(a => counts[a]++);
+const max = Math.max(counts.A, counts.B, counts.C, counts.D);
+const top = ["A", "B", "C", "D"].filter(k => counts[k] === max);
+if (top.length > 1) return answers[0];
+return top[0];
+}
+// ===== シェア画像（Canvas 1200×630）の描画 =====
+// 蓮空の棚卸しシェア画像（2026-11-25）と同じ方式。描画仕様は
+// goals/3-100/files 配下の横展開メモに合わせること。
+function todayJp() {
+const d = new Date();
+return d.getFullYear() + "年" + (d.getMonth() + 1) + "月" + d.getDate() + "日";
+}
+function drawShareImage(typeName, breathName) {
+const cv = document.getElementById("shareCanvas");
+if (!cv || !cv.getContext) return;
+const ctx = cv.getContext("2d");
+const W = 1200, H = 630;
+const grad = ctx.createLinearGradient(0, 0, 0, H);
+grad.addColorStop(0, "#8a5426");
+grad.addColorStop(0.55, "#c4742a");
+grad.addColorStop(1, "#d9903f");
+ctx.fillStyle = grad;
+ctx.fillRect(0, 0, W, H);
+// 柔らかい円（決定的な疑似乱数で毎回同じ配置にする）
+let seed = 20261125;
+const rand = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+for (let i = 0; i < 40; i++) {
+  const x = 40 + rand() * 1120, y = 30 + rand() * 570;
+  const r = 6 + rand() * 26, a = 0.04 + rand() * 0.08;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255,248,235," + a + ")";
+  ctx.fill();
+}
+// クリーム色の二重枠
+ctx.strokeStyle = "rgba(255,248,235,0.9)"; ctx.lineWidth = 3; ctx.strokeRect(24, 24, W - 48, H - 48);
+ctx.strokeStyle = "rgba(255,248,235,0.45)"; ctx.lineWidth = 1; ctx.strokeRect(36, 36, W - 72, H - 72);
+const SANS = '"Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif';
+ctx.textAlign = "center"; ctx.textBaseline = "middle";
+try { ctx.letterSpacing = "6px"; } catch (e) {}
+ctx.fillStyle = "#fff8eb";
+ctx.font = "bold 54px " + SANS;
+ctx.fillText("ため息タイプ診断", W / 2, 118);
+try { ctx.letterSpacing = "2px"; } catch (e) {}
+ctx.fillStyle = "#ffe9bd";
+ctx.font = "26px " + SANS;
+ctx.fillText("脳活呼吸メソッド", W / 2, 170);
+ctx.strokeStyle = "rgba(255,248,235,0.8)"; ctx.lineWidth = 2;
+ctx.beginPath(); ctx.moveTo(W / 2 - 120, 205); ctx.lineTo(W / 2 + 120, 205); ctx.stroke();
+ctx.fillStyle = "#ffe9bd";
+ctx.font = "24px " + SANS;
+ctx.fillText("あなたのため息タイプ", W / 2, 256);
+ctx.fillStyle = "#ffffff";
+ctx.font = "bold 46px " + SANS;
+ctx.fillText(typeName, W / 2, 316);
+ctx.fillStyle = "#ffe9bd";
+ctx.font = "26px " + SANS;
+ctx.fillText("おすすめの呼吸法", W / 2, 388);
+ctx.fillStyle = "#fff8eb";
+ctx.font = "bold 60px " + SANS;
+ctx.fillText(breathName, W / 2, 462);
+ctx.fillStyle = "rgba(255,248,235,0.75)";
+ctx.font = "24px " + SANS;
+ctx.fillText(todayJp(), W / 2, 540);
+ctx.fillStyle = "#fff8eb";
+ctx.font = "24px " + SANS;
+ctx.fillText("えもん（笑門）ひろし｜脳活呼吸メソッド", W / 2, 578);
+}
+function downloadShareImage() {
+const cv = document.getElementById("shareCanvas");
+if (!cv) return;
+const name = "emon-tameiki-" + new Date().toISOString().slice(0, 10) + ".png";
+if (cv.toBlob) {
+  cv.toBlob((blob) => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }, "image/png");
+} else {
+  const a = document.createElement("a");
+  a.href = cv.toDataURL("image/png");
+  a.download = name;
+  a.click();
+}
+}
+function shareOnX() {
+const r = RESULTS[resultType];
+const text = "ため息タイプ診断で、私は「" + r.name + "」でした。おすすめの呼吸法は「" + r.breathName + "」です。";
+const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text)
+  + "&url=" + encodeURIComponent("https://mirai-sensei.github.io/shindan/emon/");
+window.open(url, "_blank", "noopener");
+}
+function showResult() {
+document.getElementById("screen-quiz").classList.add("hidden");
+document.getElementById("screen-result").classList.remove("hidden");
+resultType = judgeType();
+recordDiagnosis();
+// メール登録フォームの hidden に、流入元と結果タイプを引き継ぐ（接続点ドキュメント差し替え箇所2）
+document.getElementById("mf-src").value = SRC;
+document.getElementById("mf-type").value = resultType;
+const r = RESULTS[resultType];
+document.getElementById("rtype").textContent = r.name;
+document.getElementById("rbody").textContent = r.body;
+document.getElementById("rbreath").innerHTML =
+"おすすめの呼吸法：<span class=\"bname\">「" + r.breathName + "」</span><br>" +
+"この呼吸のやり方は、ここから先です。下の案内から、LINEで受け取れます。";
+// ちょい見せ：呼吸法は「名前」だけを出し、やり方（r.breath）は画面に出さない。
+// r.breath は LINEキーワード「呼吸A〜D」への応答文の原稿として保持している。
+document.getElementById("rkeyword").textContent = r.keyword;
+document.getElementById("rkeyword2").textContent = r.keyword;
+document.getElementById("rkeyword3").textContent = r.keyword;
+const rel = document.getElementById("rrelated");
+rel.innerHTML = "";
+r.notes.forEach(([label, url], i) => {
+if (i > 0) rel.appendChild(document.createElement("br"));
+rel.appendChild(document.createTextNode("関連記事："));
+const a = document.createElement("a");
+a.href = url;
+a.target = "_blank";
+a.rel = "noopener";
+a.textContent = label;
+a.onclick = () => track("tameiki_note_click", { result_type: resultType});
+rel.appendChild(a);
+});
+track("tameiki_complete", { result_type: resultType});
+// LINEボタン：リンク先（lin.ee）は変更せず、クリック時に src と結果タイプを計測へ引き継ぐ。
+document.getElementById("linebtn").onclick = () => track("tameiki_line_click", { result_type: resultType});
+drawShareImage(r.name, r.breathName);
+}
+
+// ===== メール登録フォームの送信処理（受け皿 POST /api/register） =====
+// 送信先URLはデプロイ後に実URLへ一括置換する（プレースホルダ: https://emon-receiver.onrender.com）
+document.getElementById("mailform").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const payload = Object.fromEntries(fd.entries());
+  payload.consent_benefit = fd.get("consent_benefit") ? "1" : "";
+  payload.consent_newsletter = fd.get("consent_newsletter") ? "1" : "";
+  payload.visitor_id = VISITOR_ID;
+  const msg = document.getElementById("mf-msg");
+  try {
+    const res = await fetch("https://emon-receiver.onrender.com/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      track("tameiki_mail_register", { result_type: payload.result_type });
+      msg.textContent = "ありがとうございます。特典『ため息が、ほどける3分』をお届けしました（メールが届くまで、少し時間がかかる場合があります）。届かない場合は、迷惑メールフォルダもご確認ください。";
+      e.target.querySelector("button").disabled = true;
+    } else {
+      msg.textContent = data.error || "登録できませんでした。";
+    }
+  } catch (err) {
+    msg.textContent = "通信に失敗しました。時間をおいてお試しください。";
+  }
+});
+</script>
+</body>
+</html>
