@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>二人の相性数秘｜タクスー霊視 みらい先生</title>
+<meta name="description" content="あなたと彼の生年月日から、二人の運命数（ライフパスナンバー）を出して相性を読み解く数秘診断です。彼の数字から見える性格も出ます。">
+<style>
+  :root{
+    --bg:#fdf7f4;
+    --card:#ffffff;
+    --ink:#3a3230;
+    --sub:#8a7a74;
+    --accent:#d6336c;
+    --accent-soft:#fdeef2;
+    --line:#f3d9de;
+    --gold:#b98a2f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,"Noto Sans JP",sans-serif;
+    font-size:17px;
+    line-height:1.8;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:24px 16px 56px;}
+  header.top{text-align:center;padding:24px 0 8px;}
+  .brand{color:var(--gold);letter-spacing:.35em;font-size:13px;}
+  h1{font-size:27px;margin:10px 0 6px;font-weight:600;letter-spacing:.06em;}
+  .lead{color:var(--sub);font-size:15px;margin:0 auto;max-width:32em;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:22px 18px;
+    margin:20px 0;
+    box-shadow:0 2px 10px rgba(214,51,108,.05);
+  }
+  h2{font-size:19px;margin:0 0 6px;font-weight:600;}
+  h2 .who{color:var(--accent);}
+  .note{color:var(--sub);font-size:14px;margin:4px 0 12px;}
+  .free-note{
+    display:inline-block;margin:12px 0 0;padding:5px 16px;border:1px solid var(--accent);
+    color:var(--accent);border-radius:999px;font-size:14px;background:var(--accent-soft);
+  }
+  .daterow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .dsel{
+    appearance:none;-webkit-appearance:none;
+    border:1px solid var(--line);background:#fff;border-radius:12px;
+    padding:11px 26px 11px 12px;font-size:16px;color:var(--ink);font-family:inherit;cursor:pointer;
+    background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a7a74'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 10px center;
+  }
+  .dsel.year{flex:1.3;min-width:104px;}
+  .dsel.md{flex:1;min-width:76px;}
+  .dunit{color:var(--sub);font-size:14px;}
+  .go{
+    display:block;width:100%;margin:22px 0 0;padding:16px;border:none;border-radius:999px;
+    background:var(--accent);color:#fff;font-size:18px;cursor:pointer;font-family:inherit;letter-spacing:.08em;
+  }
+  .err{color:var(--accent);font-size:14px;text-align:center;min-height:1.5em;margin:8px 0 0;}
+  /* 結果 */
+  #result{display:none;}
+  .score-head{text-align:center;}
+  .score-label{color:var(--sub);font-size:14px;letter-spacing:.2em;}
+  .score-big{font-size:56px;line-height:1.15;color:var(--accent);font-weight:600;}
+  .score-big small{font-size:22px;}
+  .stage{font-size:20px;color:var(--accent);font-weight:600;margin:2px 0 0;letter-spacing:.08em;}
+  .comment{font-size:18px;text-align:center;margin:10px 0 4px;}
+  .nums{display:flex;gap:10px;margin-top:18px;}
+  .ncard{
+    flex:1;background:var(--accent-soft);border-radius:14px;padding:16px 12px;text-align:center;
+  }
+  .ncard .nlabel{font-size:13px;color:var(--sub);line-height:1.5;}
+  .ncard .nbig{font-size:42px;color:var(--accent);font-weight:600;line-height:1.2;}
+  .ncard .nnick{font-size:16px;font-weight:600;}
+  .ncard .ntheme{font-size:13px;color:var(--ink);margin-top:6px;line-height:1.6;}
+  .calc{
+    margin-top:14px;background:#fff;border:1px dashed var(--line);border-radius:12px;
+    padding:12px 14px;font-size:14px;line-height:1.8;
+  }
+  .calc .crow{margin:0;}
+  .calc .who2{color:var(--accent);font-weight:600;}
+  .reading{margin-top:18px;}
+  .reading p{margin:0 0 10px;}
+  .reading h3{font-size:16px;margin:16px 0 6px;font-weight:600;}
+  .lockbox{
+    margin-top:18px;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;
+    background:var(--bg);
+  }
+  .lockbox p{margin:0 0 6px;font-weight:600;font-size:15px;}
+  .lockbox ul{margin:0;padding-left:1.2em;color:var(--sub);font-size:14px;}
+  .meyasu{font-size:13px;color:var(--sub);border-top:1px dashed var(--line);padding-top:10px;}
+  .linebox{
+    background:#f2fbf3;border:1px solid #cfe8cf;border-radius:18px;padding:22px 18px;margin:20px 0;text-align:center;
+  }
+  .linebox h2{color:#2e7d32;}
+  .linebtn{
+    display:inline-block;margin-top:10px;background:#06c755;color:#fff;text-decoration:none;
+    padding:14px 34px;border-radius:999px;font-size:17px;letter-spacing:.05em;
+  }
+  .lineid{color:var(--sub);font-size:14px;margin-top:10px;}
+  .sharebox{border-top:1px dashed var(--line);margin-top:18px;padding-top:16px;}
+  .sharebox h2{font-size:16px;}
+  .sharetext{
+    background:var(--bg);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;font-size:14px;line-height:1.7;white-space:pre-wrap;word-break:break-all;
+  }
+  .sharebtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .sbtn{
+    flex:1;min-width:100px;text-align:center;appearance:none;border:1px solid var(--line);
+    background:#fff;border-radius:999px;padding:10px 6px;cursor:pointer;font-size:14px;
+    color:var(--ink);font-family:inherit;text-decoration:none;
+  }
+  .sbtn.x{background:#000;color:#fff;border-color:#000;}
+  .sbtn.th{background:#fff;color:#000;border-color:#000;}
+  .paidbox{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:22px 18px;margin:20px 0;
+  }
+  .paiditem{border-top:1px dashed var(--line);padding:14px 0 4px;margin-top:12px;}
+  .paidname{font-size:16px;font-weight:600;}
+  .paidprice{color:var(--accent);font-size:15px;}
+  .paiditem p{margin:6px 0;font-size:15px;}
+  .paidbtn{
+    display:inline-block;margin-top:6px;border:1px solid var(--accent);color:var(--accent);
+    text-decoration:none;padding:9px 22px;border-radius:999px;font-size:15px;
+  }
+  .again{display:block;margin:18px auto 0;background:none;border:none;color:var(--sub);
+    text-decoration:underline;cursor:pointer;font-size:15px;font-family:inherit;}
+  footer{text-align:center;color:var(--sub);font-size:13px;margin-top:28px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">― 診 断 ―</div>
+    <h1>二人の相性数秘</h1>
+    <p class="lead">あなたと彼の生年月日から、二人の「運命数」を出して相性を読み解きます。<br>
+    彼の誕生日を入れるだけで、彼の数字から見える性格まで出るのが、この診断の特徴です。</p>
+    <p class="free-note">無料・登録なしで、結果の入口まで見られます</p>
+  </header>
+
+  <div class="card">
+    <p style="margin:0;">運命数は、生年月日の数字から、決まった計算で出すものです。どなたが計算しても同じ数字になります。結果は「見立て」です。相手の気持ちを断定するものではありません。</p>
+    <p class="note" style="margin-bottom:0;">入力した生年月日がどこかへ送信されることはありません。</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="who">あなた</span>の生年月日</h2>
+    <p class="note">あなたの生年月日を選んでください。</p>
+    <div class="daterow">
+      <select class="dsel year" id="selfY" aria-label="あなたの生まれた年"></select><span class="dunit">年</span>
+      <select class="dsel md" id="selfM" aria-label="あなたの生まれた月"></select><span class="dunit">月</span>
+      <select class="dsel md" id="selfD" aria-label="あなたの生まれた日"></select><span class="dunit">日</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="who">彼</span>の生年月日</h2>
+    <p class="note">彼の生年月日を選んでください。彼の数字から見える性格も出ます。</p>
+    <div class="daterow">
+      <select class="dsel year" id="partnerY" aria-label="彼の生まれた年"></select><span class="dunit">年</span>
+      <select class="dsel md" id="partnerM" aria-label="彼の生まれた月"></select><span class="dunit">月</span>
+      <select class="dsel md" id="partnerD" aria-label="彼の生まれた日"></select><span class="dunit">日</span>
+    </div>
+  </div>
+
+  <button type="button" class="go" id="goBtn">二人の相性を見る</button>
+  <p class="err" id="errMsg"></p>
+
+  <div class="card" id="result">
+    <div class="score-head">
+      <div class="score-label">二 人 の 響 き 合 い</div>
+      <div class="score-big"><span id="totalScore">--</span><small> 点</small></div>
+      <p class="stage" id="stageText"></p>
+      <p class="comment" id="oneComment"></p>
+    </div>
+    <div class="nums">
+      <div class="ncard">
+        <div class="nlabel">あなたの運命数</div>
+        <div class="nbig" id="selfNum">--</div>
+        <div class="nnick" id="selfNick"></div>
+        <div class="ntheme" id="selfTheme"></div>
+      </div>
+      <div class="ncard">
+        <div class="nlabel">彼の運命数</div>
+        <div class="nbig" id="partnerNum">--</div>
+        <div class="nnick" id="partnerNick"></div>
+        <div class="ntheme" id="partnerTheme"></div>
+      </div>
+    </div>
+    <div class="calc" id="calcBox"></div>
+    <div class="reading" id="reading"></div>
+    <div class="lockbox">
+      <p>続きの読み解きは、LINEでお送りします</p>
+      <ul>
+        <li>彼の数字が示す本音と、あなたへの接し方</li>
+        <li>二人の組み合わせだけの、深い読み解き</li>
+        <li>二人が長く続くためのテーマ</li>
+      </ul>
+    </div>
+    <p class="meyasu" style="margin-top:16px;">この点数は、数字の組み合わせから計算した目安です。実際の二人の関係は、日々の言葉と行動で変わっていきます。点数に振り回されず、彼を知るための材料にしてください。</p>
+    <div class="sharebox">
+      <h2>結果をシェアする</h2>
+      <p class="note">診断結果の文案を用意しました。そのままコピーして、XやThreadsへの投稿に使えます（自動で送信されることはありません）。</p>
+      <div class="sharetext" id="shareText"></div>
+      <div class="sharebtns">
+        <button type="button" class="sbtn" id="copyBtn">文案をコピー</button>
+        <a class="sbtn x" id="xBtn" href="#" target="_blank" rel="noopener">Xで投稿する</a>
+        <a class="sbtn th" id="thBtn" href="#" target="_blank" rel="noopener">Threadsで投稿する</a>
+      </div>
+      <p class="note" id="copyMsg" style="min-height:1.5em;margin-bottom:0;"></p>
+    </div>
+    <button type="button" class="again" id="againBtn">選び直す</button>
+  </div>
+
+  <div class="linebox" id="lineBox" style="display:none;">
+    <h2>続きは、LINEで受け取れます</h2>
+    <p style="margin:6px 0 0;">二人の数字の組み合わせ別の深掘りの読み解きに加えて、特典『彼の沈黙の本音と、あなたが送る一言』も、LINEでお送りします。</p>
+    <p style="margin:10px 0 0;">LINEで友だち追加をして、<span id="lineKeyword">「数秘」</span>と送ってください。深掘りの読み解きと特典が届きます。</p>
+    <a class="linebtn" href="https://line.me/R/ti/p/@936usuae" target="_blank" rel="noopener">LINEで友だち追加する</a>
+    <div class="lineid">LINE @936usuae（タクスー霊視 みらい先生）</div>
+  </div>
+
+  <div class="paidbox" id="paidBox" style="display:none;">
+    <h2>もっと深く知りたい方へ</h2>
+    <p class="note">この診断は、二人の傾向を見る入口です。今のあなたの状況そのものを聞きたいときは、こちらもあります。必要なときだけ、どうぞ。</p>
+    <div class="paiditem">
+      <div class="paidname">ひとことメール鑑定（ココナラ）</div>
+      <div class="paidprice">1,000円</div>
+      <p>今の彼とのことを、みらい先生が霊視して、メールでお答えします。</p>
+      <a class="paidbtn" href="https://coconala.com/services/4532594" target="_blank" rel="noopener">ココナラで見る</a>
+    </div>
+    <div class="paiditem">
+      <div class="paidname">メンバーシップ「相談室だより」</div>
+      <div class="paidprice">月980円</div>
+      <p>みらい先生のメンバーシップです。申込先のご案内は、公開のときにここへ置きます。</p>
+    </div>
+  </div>
+
+  <footer>
+    タクスー霊視 みらい先生｜霊視歴40年<br>
+    診断は「見立て」です。相手の気持ちを断定するものではありません。
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+
+/* ===== 運命数（ライフパスナンバー）のデータ =====
+   nick: 二つ名 / theme: 人生のテーマ / trait: 性格の一言
+   his: 彼としての読み解き（厚め） / heart: 彼の一言（コメント用） */
+var NUMBERS = {
+  1:{nick:"始まり", theme:"自分の足で、人生を切り開いていく", trait:"決断が早く、まっすぐ進む人",
+     his:"自分で決めて動きたい気持ちの強い人です。頼られると力を発揮しますが、細かく指示されたり、先回りして決められたりすると、気持ちが離れていくことがあります。気持ちは言葉より先に行動に出るタイプで、連絡の回数より「何をしてくれたか」で眺めると、彼の愛情の形が見えてきます。",
+     heart:"気持ちを、言葉より行動で示す人"},
+  2:{nick:"寄り添い", theme:"人と人の間を、やわらかくつないでいく", trait:"空気を読み、相手に合わせるのが上手な人",
+     his:"争いを嫌い、穏やかさを大切にする人です。気持ちを察してほしい思いが強く、言葉にする前に「分かってほしい」と願っていることが多い見立てです。彼が静かになるのは、怒っているからではなく、傷つきたくない気持ちが先に立つから、という場合があります。安心できる空気の中で、少しずつ本音が出てきます。",
+     heart:"気持ちを察してほしいところのある人"},
+  3:{nick:"表現", theme:"喜びを分かち合い、人生を楽しんでいく", trait:"明るく、気持ちを言葉にするのが得意な人",
+     his:"一緒に笑える時間を何より大切にする人です。楽しい会話や軽いやり取りの中で気持ちが育っていくタイプで、重い空気が長く続くと、心が逃げ場所を探し始めます。深刻な話ほど、まず明るい日常のやり取りを取り戻すことが、彼との距離を縮める近道になります。",
+     heart:"一緒に笑える時間を大切にする人"},
+  4:{nick:"土台", theme:"確かなものを、コツコツ築いていく", trait:"誠実で、約束と日常を大切にする人",
+     his:"派手さより、安定と信頼を求める人です。気持ちは言葉より、態度と継続に出ます。急な変化や予定の変更が苦手で、信頼が積み上がるほど、深く静かに愛情を示すようになります。連絡のペースが一定しているのは、彼なりの誠実さの表れと見てよいでしょう。",
+     heart:"信頼が積み上がるほど、愛情が深まる人"},
+  5:{nick:"自由", theme:"変化の中で、自分らしく生きていく", trait:"好奇心が強く、束縛を嫌う人",
+     his:"自由を尊重してくれる相手に、心を開く人です。追われると逃げたくなる一方で、放っておかれすぎても寂しくなる、距離感が鍵になるタイプです。彼の気持ちは、束縛しない距離の中でこそ育ちます。新しい体験を一緒に楽しめる関係が、長続きの土台になります。",
+     heart:"自由を尊重されると、心を開く人"},
+  6:{nick:"愛情", theme:"大切な人を守り、育てていく", trait:"面倒見がよく、責任感が強い人",
+     his:"守りたい、役に立ちたいという気持ちが、愛情の中心にある人です。頼られることで愛を実感しますが、背負いすぎて疲れると、静かに距離を置くことがあります。彼が黙るのは、気持ちが冷めたからではなく、抱えすぎた荷物を一人で下ろしている途中、という見立てができます。",
+     heart:"頼られることで、愛を実感する人"},
+  7:{nick:"探究", theme:"物事の奥にある意味を探していく", trait:"一人の時間で、考えを深める人",
+     his:"心の距離が近い関係を求める一方で、考えるための一人の時間も欠かせない人です。彼にとって沈黙は拒絶ではなく、頭の中を整理している時間のことが多い見立てです。問い詰められると殻が厚くなりますが、静かに待ってもらえた経験が、彼にとって何よりの信頼の証になります。",
+     heart:"沈黙の中で、気持ちを整理する人"},
+  8:{nick:"実現", theme:"思いを形にし、豊かさを作っていく", trait:"目標に向かう力と、実行力のある人",
+     his:"目標に向かう力の強い人です。仕事や目標に全力な時期は、恋愛の優先順位が下がって見えることがありますが、それは気持ちが薄れたのとは別の話です。尊敬し合える関係の中で、彼の気持ちは長く安定します。成果を認める一言が、彼にとって大きな支えになります。",
+     heart:"尊敬し合える関係で、気持ちが安定する人"},
+  9:{nick:"包容", theme:"広い心で、人を受け止めていく", trait:"情が深く、人の気持ちに敏感な人",
+     his:"気持ちが大きく、相手のために尽くすことを惜しまない人です。情が深いぶん感情の波もあり、静かにしている時は、気持ちを整理している途中かもしれません。彼の優しさは当たり前ではなく、受け取ったことを言葉にして返すほど、二人の結びつきは深まっていきます。",
+     heart:"情が深く、尽くすことを惜しまない人"},
+  11:{nick:"直感", theme:"感じる力で、本質をつかんでいく", trait:"直感が鋭く、繊細な人",
+     his:"言葉にされていない空気まで感じ取る人です。そのぶん疲れやすく、気持ちが満ちると突然静かになることがあります。沈黙は、感じ取りすぎた心を休ませている時間の見立てです。安心できる静けさを一緒に作れる相手を、彼は深く大切にします。直感であなたを選んでいる分、気持ちの根は強いタイプです。",
+     heart:"言葉にならない空気まで、感じ取る人"},
+  22:{nick:"築く", theme:"大きな夢を、現実の形にしていく", trait:"理想と実行力を、あわせ持つ人",
+     his:"将来の形を一緒に描ける相手に、強く惹かれる人です。責任感が重くなる時期は、恋愛どころではなくなることがあり、その沈黙は真剣さの裏側、という見立てができます。目先のやり取りより「この人と将来を作れるか」で関係を測っているため、信頼が育つほど気持ちは揺らぎにくくなります。",
+     heart:"将来を一緒に描ける相手に、惹かれる人"},
+  33:{nick:"癒し", theme:"無条件の愛で、人を癒していく", trait:"情が深く、与えることを惜しまない人",
+     his:"相手の幸せを、自分のことのように考える人です。与えることを惜しみませんが、与えすぎて疲れてしまうことがあり、その疲れを表に出すのが苦手です。感謝の言葉が、彼にとって何よりの回復になります。彼の優しさに甘えすぎず、受け取った分を返す関係が長続きの鍵です。",
+     heart:"感謝の言葉で、回復する人"}
+};
+var NUMBER_LIST = [1,2,3,4,5,6,7,8,9,11,22,33];
+var MASTER_NUMBERS = [11,22,33];
+
+function rootOf(n){
+  if(n === 11) return 2;
+  if(n === 22) return 4;
+  if(n === 33) return 6;
+  return n;
+}
+function isMaster(n){ return MASTER_NUMBERS.indexOf(n) !== -1; }
+
+/* ===== 運命数の計算 =====
+   生年月日の数字を全部足し、1桁になるまで足し続ける。
+   途中で 11・22・33 になったら、マスターナンバーとしてそこで止める。 */
+function digitSum(n){
+  var s = 0;
+  while(n > 0){ s += n % 10; n = Math.floor(n / 10); }
+  return s;
+}
+function pad2(n){ return (n < 10 ? "0" : "") + n; }
+
+function lifePath(y, m, d){
+  var str = String(y) + pad2(m) + pad2(d);
+  var digits = str.split("");
+  var total = 0;
+  digits.forEach(function(c){ total += Number(c); });
+  var steps = [{expr: digits.join("＋"), value: total}];
+  var cur = total;
+  while(cur > 9 && !isMaster(cur)){
+    var ns = digitSum(cur);
+    steps.push({expr: String(cur).split("").join("＋"), value: ns});
+    cur = ns;
+  }
+  return {num: cur, steps: steps};
+}
+
+function calcStepsText(res){
+  var parts = [];
+  res.steps.forEach(function(s, i){
+    parts.push((i === 0 ? "" : "→ ") + s.expr + "＝" + s.value);
+  });
+  var t = parts.join(" ");
+  if(isMaster(res.num)) t += "（マスターナンバー）";
+  return t;
+}
+
+/* ===== 相性のルール =====
+   土台62点に、根の数字（ルート）同士の響き合い表を加え、
+   組み合わせのボーナスを加減する。全文はREADMEに記載。 */
+var ROOT_AFFINITY = {
+  "1-2":10, "1-3":12, "1-4":-4, "1-5":12, "1-6":8, "1-7":2, "1-8":-6, "1-9":12,
+  "2-3":10, "2-4":8, "2-5":-6, "2-6":14, "2-7":0, "2-8":10, "2-9":10,
+  "3-4":-6, "3-5":12, "3-6":10, "3-7":-4, "3-8":2, "3-9":12,
+  "4-5":-8, "4-6":10, "4-7":8, "4-8":10, "4-9":0,
+  "5-6":-6, "5-7":8, "5-8":2, "5-9":10,
+  "6-7":-6, "6-8":8, "6-9":14,
+  "7-8":2, "7-9":4,
+  "8-9":-4
+};
+function rootAffinity(ra, rb){
+  if(ra === rb) return 18;
+  var key = Math.min(ra, rb) + "-" + Math.max(ra, rb);
+  return ROOT_AFFINITY[key];
+}
+function isMasterRootPair(a, b){
+  return (isMaster(a) && rootOf(a) === b) || (isMaster(b) && rootOf(b) === a);
+}
+function pairCategory(a, b){
+  if(a === b) return "same";
+  if(isMasterRootPair(a, b)) return "root";
+  var aff = rootAffinity(rootOf(a), rootOf(b));
+  if(aff >= 10) return "harmonious";
+  if(aff >= 1) return "mild";
+  if(aff === 0) return "neutral";
+  return "challenging";
+}
+function clamp(n){ return Math.max(45, Math.min(98, n)); }
+
+function pairScore(a, b){
+  var s = 62 + rootAffinity(rootOf(a), rootOf(b));
+  if(a === b) s += 6;                    /* 同じ運命数同士 */
+  if(isMasterRootPair(a, b)) s += 8;     /* マスターと、その根の数字 */
+  var masters = (isMaster(a) ? 1 : 0) + (isMaster(b) ? 1 : 0);
+  if(masters === 2) s += 6;              /* マスターナンバー同士 */
+  else if(masters === 1) s += 3;         /* 片方がマスターナンバー */
+  return clamp(Math.round(s));
+}
+
+function stageOf(score){
+  if(score >= 85) return "魂の伴走者";
+  if(score >= 75) return "深く響き合う二人";
+  if(score >= 65) return "補い合う二人";
+  if(score >= 55) return "刺激し合う二人";
+  return "ゆっくり育つ二人";
+}
+
+function diagnose(a, b){
+  var score = pairScore(a, b);
+  return {score: score, stage: stageOf(score), category: pairCategory(a, b)};
+}
+
+/* ===== コメント生成 ===== */
+var CATEGORY_PHRASE = {
+  same: "同じ数字を持つ二人は、価値観の根っこが近い組み合わせ",
+  root: "もとの数字を共有する、響き合いやすい組み合わせ",
+  harmonious: "数字同士の相性がよく、自然に歩調が合いやすい組み合わせ",
+  mild: "大きな衝突の少ない、穏やかな組み合わせ",
+  neutral: "似すぎず違いすぎず、育てがいのある組み合わせ",
+  challenging: "個性がぶつかりやすい分、理解し合えたときの結びつきが強い組み合わせ"
+};
+
+function buildComment(a, b, res){
+  var na = NUMBERS[a], nb = NUMBERS[b];
+  return na.nick + "の" + a + "と、" + nb.nick + "の" + b + "。" +
+    CATEGORY_PHRASE[res.category] + "で、彼は" + nb.heart + "です。";
+}
+
+/* ===== 読み解き生成 ===== */
+var PAIR_READING = {
+  same: "同じ運命数を持つ二人は、人生のテーマの根っこが同じです。言葉にしなくても分かり合える部分が多い一方で、同じ弱さを持っているため、落ち込むときも一緒になりがちです。どちらかが先に立て直す合図を決めておくと、二人で沈まずに済みます。",
+  root: "あなたの数字と彼の数字は、もとの数字（根）を共有しています。表に出る性格は違って見えても、深いところで同じ響きを持つ組み合わせです。彼の言動の奥にある気持ちを、あなたは感じ取りやすいはずです。その感じ取りやすさを、不安ではなく信頼の材料にしてください。",
+  harmonious: "数字同士の響きがよい組み合わせです。どちらかが無理をして合わせるのではなく、自然な歩調で近づいていけます。彼のペースを尊重するほど関係が深まっていく配置なので、急がず、積み重ねることを大切にしてください。",
+  mild: "大きな衝突の種は少ない組み合わせです。穏やかに続いていく力があるぶん、「言わなくても分かるはず」という思い込みだけ気をつけてください。小さな確認の言葉が、二人の安定を長持ちさせます。",
+  neutral: "似すぎず、違いすぎない組み合わせです。最初から完璧に分かり合うタイプではありませんが、知ろうとする気持ちがそのまま絆になっていく二人です。彼の世界の見え方に興味を持ち続けることが、関係を育てます。",
+  challenging: "数字の個性がはっきり違う組み合わせです。彼の考え方や進み方が、あなたには読みにくく感じる場面があるかもしれません。ただ、違いは欠点ではなく、自分の世界を広げてくれる材料です。分からない部分を「冷たい」と決めつけず、彼の数字の性質から眺めてみると、見え方が変わります。"
+};
+
+function buildReading(a, b, res){
+  var nb = NUMBERS[b];
+  var lines = [];
+  lines.push({h: "彼の運命数" + b + "（" + nb.nick + "）から見えること", p: nb.his});
+  lines.push({h: "二人の組み合わせ", p: PAIR_READING[res.category]});
+  return lines;
+}
+
+/* ===== シェア文案の生成（X・Threads用） ===== */
+function buildShareText(a, b, res){
+  var text =
+    "【二人の相性数秘】あなた 運命数" + a + "（" + NUMBERS[a].nick + "）× 彼 運命数" + b + "（" + NUMBERS[b].nick + "）\n" +
+    "響き合い度" + res.score + "点・" + res.stage + "\n" +
+    buildComment(a, b, res) + "\n" +
+    "#二人の相性数秘";
+  return text;
+}
+
+/* ===== 画面の動作 ===== */
+function fillSelect(id, from, to, placeholder){
+  var sel = document.getElementById(id);
+  var ph = document.createElement("option");
+  ph.value = "";
+  ph.textContent = placeholder;
+  sel.appendChild(ph);
+  for(var v = from; v <= to; v++){
+    var o = document.createElement("option");
+    o.value = v;
+    o.textContent = v;
+    sel.appendChild(o);
+  }
+}
+function buildDateSelects(prefix){
+  fillSelect(prefix + "Y", 1940, 2010, "年");
+  fillSelect(prefix + "M", 1, 12, "月");
+  fillSelect(prefix + "D", 1, 31, "日");
+}
+buildDateSelects("self");
+buildDateSelects("partner");
+
+function readDate(prefix){
+  var y = document.getElementById(prefix + "Y").value;
+  var m = document.getElementById(prefix + "M").value;
+  var d = document.getElementById(prefix + "D").value;
+  if(y === "" || m === "" || d === "") return null;
+  return {y: Number(y), m: Number(m), d: Number(d)};
+}
+function isValidDate(dt){
+  var t = new Date(dt.y, dt.m - 1, dt.d);
+  return t.getFullYear() === dt.y && t.getMonth() === dt.m - 1 && t.getDate() === dt.d;
+}
+
+document.getElementById("goBtn").addEventListener("click", function(){
+  var err = document.getElementById("errMsg");
+  var sd = readDate("self");
+  var pd = readDate("partner");
+  if(!sd || !pd){
+    err.textContent = "あなたと彼、両方の生年月日を選んでください。";
+    return;
+  }
+  if(!isValidDate(sd) || !isValidDate(pd)){
+    err.textContent = "存在しない日付になっています。日にちを見直してください。";
+    return;
+  }
+  err.textContent = "";
+  var sRes = lifePath(sd.y, sd.m, sd.d);
+  var pRes = lifePath(pd.y, pd.m, pd.d);
+  var a = sRes.num, b = pRes.num;
+  var res = diagnose(a, b);
+
+  document.getElementById("totalScore").textContent = res.score;
+  document.getElementById("stageText").textContent = res.stage;
+  document.getElementById("oneComment").textContent = buildComment(a, b, res);
+  document.getElementById("selfNum").textContent = a;
+  document.getElementById("selfNick").textContent = NUMBERS[a].nick;
+  document.getElementById("selfTheme").textContent = NUMBERS[a].trait;
+  document.getElementById("partnerNum").textContent = b;
+  document.getElementById("partnerNick").textContent = NUMBERS[b].nick;
+  document.getElementById("partnerTheme").textContent = NUMBERS[b].trait;
+
+  var calc = document.getElementById("calcBox");
+  calc.innerHTML = "";
+  [["あなた", sRes], ["彼", pRes]].forEach(function(pair){
+    var p = document.createElement("p");
+    p.className = "crow";
+    var span = document.createElement("span");
+    span.className = "who2";
+    span.textContent = pair[0];
+    p.appendChild(span);
+    p.appendChild(document.createTextNode("：" + calcStepsText(pair[1])));
+    calc.appendChild(p);
+  });
+
+  var reading = document.getElementById("reading");
+  reading.innerHTML = "";
+  buildReading(a, b, res).forEach(function(item){
+    var h = document.createElement("h3");
+    h.textContent = item.h;
+    reading.appendChild(h);
+    var p = document.createElement("p");
+    p.textContent = item.p;
+    reading.appendChild(p);
+  });
+
+  var shareText = buildShareText(a, b, res);
+  document.getElementById("shareText").textContent = shareText;
+  document.getElementById("copyMsg").textContent = "";
+  var enc = encodeURIComponent(shareText);
+  document.getElementById("xBtn").href = "https://twitter.com/intent/tweet?text=" + enc;
+  document.getElementById("thBtn").href = "https://www.threads.net/intent/post?text=" + enc;
+  var result = document.getElementById("result");
+  result.style.display = "block";
+  document.getElementById("lineBox").style.display = "block";
+  document.getElementById("paidBox").style.display = "block";
+  result.scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+document.getElementById("copyBtn").addEventListener("click", function(){
+  var text = document.getElementById("shareText").textContent;
+  var msg = document.getElementById("copyMsg");
+  function done(){ msg.textContent = "コピーしました。XやThreadsに貼って使ってください。"; }
+  function fallback(){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); done(); }
+    catch(e){ msg.textContent = "コピーできませんでした。文案を長押ししてコピーしてください。"; }
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, fallback);
+  } else {
+    fallback();
+  }
+});
+
+document.getElementById("againBtn").addEventListener("click", function(){
+  document.getElementById("result").style.display = "none";
+  document.getElementById("lineBox").style.display = "none";
+  document.getElementById("paidBox").style.display = "none";
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+</script>
+</body>
+</html>
